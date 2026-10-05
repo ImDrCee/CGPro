@@ -1,0 +1,6 @@
+
+# Confidential working documents, never publish
+*.docx
+*.doc
+*.pdf
+*.pptx
