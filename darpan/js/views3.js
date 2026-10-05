@@ -197,12 +197,66 @@
         ${list.length ? list.map(row).join('') : empty(all.length ? 'No link matches' : 'No links saved yet', 'Use “Add link” for one, “Paste many” for a list, or import a JSON file. Each link is tagged and joins the dashboards.')}` })}</div>`;
   };
 
+  // ????????????? tracked-account updates (data/accounts.js, written by scripts/track.py) ?????????????
+  const ACC = () => (g.CGP_ACCOUNTS && g.CGP_ACCOUNTS.accounts) || [];
+  const norm = h => String(h || '').toLowerCase().replace(/^@/, '').replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '');
+  const accRef = () => (g.CGP_ACCOUNTS && Date.parse(g.CGP_ACCOUNTS.meta.generated)) || Date.now();
+  const accTagged = () => { const m = {}; try { L.liveItems().forEach(i => (m[i.id] = i)); } catch (e) { /* no live data */ } return m; };
+  // Only items the tagger kept as Chhattisgarh-relevant (an outlet's national or sports stories are dropped).
+  const accItems = (a, tg) => (Object.keys(tg).length ? a.items.filter(i => tg[i.id]) : a.items);
+  const accStats = (a, tg, ref) => {
+    const list = accItems(a, tg), its = list.map(i => tg[i.id] || null), has = its.filter(Boolean);
+    const iss = {}; has.forEach(i => { if (i.issue && !i.generic && !i.broad) iss[i.issue] = (iss[i.issue] || 0) + 1; });
+    const top = Object.keys(iss).sort((x, y) => iss[y] - iss[x])[0] || '';
+    const net = has.reduce((t, i) => t + (i.stance || 0), 0);
+    return { n7: list.filter(i => i.ts >= ref - 7 * DAY).length, n30: list.length, top, net, last: list[0] || null };
+  };
+  const feedBadge = a => {
+    const f = a.feeds || [], ok = t => f.some(x => x.type === t && x.ok);
+    const parts = []; if (ok('site') || ok('rss')) parts.push('site'); if (ok('youtube')) parts.push('YouTube'); if (ok('mentions')) parts.push('mentions');
+    return parts.length ? pill(parts.join(' + '), 'pos') : pill('no feed', 'neg');
+  };
+  V.account = key => {
+    const a = ACC().find(x => x.key === key); if (!a) return '';
+    const tg = accTagged(), ref = accRef();
+    return `<div class="mcard"><button class="mclose" data-close aria-label="Close">${I('close', 18)}</button>
+      <div class="mhead"><span>${U.esc(a.group === 'govt' ? 'Government' : a.group === 'media' ? 'Media' : a.group)}</span>${feedBadge(a)}</div>
+      <h3>${U.esc(a.name)}</h3>
+      <div class="chips">${(a.handles || []).map(h => `<a class="chip ghost" target="_blank" rel="noopener" href="${U.esc(platformUrl(h.platform, h.handle))}">${U.esc(h.platform)} ${U.esc(h.handle)}</a>`).join('')}${a.site ? `<a class="chip ghost" target="_blank" rel="noopener" href="https://${U.esc(a.site)}">${U.esc(a.site)}</a>` : ''}</div>
+      <h5>How this account is collected</h5>
+      ${(a.feeds || []).map(f => `<div class="orow"><div><b>${U.esc(f.type)}</b><p>${U.esc(f.note)}</p></div>${pill(f.ok ? 'ok' : 'failed', f.ok ? 'pos' : 'neg')}</div>`).join('') || '<p class="muted">Nothing collected yet.</p>'}
+      <h5>Latest updates (${accItems(a, tg).length}, last ${(g.CGP_ACCOUNTS.meta || {}).days || 30} days)</h5>
+      ${accItems(a, tg).slice(0, 20).map(i => { const t = tg[i.id]; return `<div class="orow"><div><a href="${U.esc(i.u)}" target="_blank" rel="noopener"><b>${U.esc(i.t)}</b></a><p>${U.esc(i.s)} ? ${U.when(i.ts)}${i.v ? ' ? ' + U.fmt(i.v) + ' views' : ''}${i.kind === 'mention' ? ' ? cites the account' : ''}${t && t.issue && !t.generic ? ' ? ' + U.esc(t.issue) : ''}</p></div>${t ? pill(t.stance > 0 ? 'supportive' : t.stance < 0 ? 'critical' : 'neutral', t.stance > 0 ? 'pos' : t.stance < 0 ? 'neg' : 'neu') : ''}</div>`; }).join('') || '<p class="muted">No items in the window.</p>'}</div>`;
+  };
+  V.trackedUpdates = () => {
+    const accts = ACC(), meta = (g.CGP_ACCOUNTS && g.CGP_ACCOUNTS.meta) || {};
+    if (!accts.length) return card({ cls: 'span12', title: 'Updates from tracked accounts', body: empty('No collection yet', 'Run scripts/track.py to fetch the latest from every account below. It writes data/accounts.js.') });
+    const tg = accTagged(), ref = accRef();
+    const rows = accts.map(a => ({ a, s: accStats(a, tg, ref) })).sort((x, y) => (y.s.n7 - x.s.n7) || (y.s.n30 - x.s.n30));
+    const all7 = []; accts.forEach(a => accItems(a, tg).forEach(i => { if (i.ts >= ref - 7 * DAY) all7.push({ a, i, t: tg[i.id] }); }));
+    const byIssue = {};
+    all7.forEach(r => { if (!r.t || !r.t.issue || r.t.generic || r.t.broad) return; const k = r.t.issue; (byIssue[k] = byIssue[k] || { k, n: 0, net: 0, who: {}, ex: r }); byIssue[k].n++; byIssue[k].net += r.t.stance || 0; byIssue[k].who[r.a.name] = 1; });
+    const pts = Object.values(byIssue).sort((x, y) => y.n - x.n).slice(0, 8);
+    const latest = all7.sort((x, y) => y.i.ts - x.i.ts).slice(0, 8);
+    const mine = ST.tracked.all(), seen = {};
+    mine.forEach(m => { const k = norm(m.handle); const hit = accts.find(a => (a.handles || []).some(h => norm(h.handle) === k) || (a.site && norm(a.site) === k) || a.name.toLowerCase() === String(m.name || '').toLowerCase()); if (!hit) seen[m.id] = m; });
+    const pending = Object.values(seen);
+    return `${card({ cls: 'span12', title: 'Key points from tracked accounts, last 7 days', sub: `Collected ${U.esc((meta.generated || '').slice(0, 10))} from ${accts.length} accounts. ${U.esc(meta.note || '')}`,
+      right: `<button class="btn ghost" data-export="watchlist">${I('up', 16)} Download watch-list</button>`,
+      body: `<div class="mgrid"><section><h5>Issues raised</h5>${pts.map(p => `<div class="orow"><div>${W.ilink(p.k)}<p>${p.n} items ? ${Object.keys(p.who).slice(0, 3).map(U.esc).join(', ')}${Object.keys(p.who).length > 3 ? ' +' + (Object.keys(p.who).length - 3) : ''}</p></div>${pill(p.net > 0 ? 'supportive' : p.net < 0 ? 'critical' : 'mixed', p.net > 0 ? 'pos' : p.net < 0 ? 'neg' : 'neu')}</div>`).join('') || '<p class="muted">No tagged issue in the last 7 days.</p>'}</section>
+      <section><h5>Latest updates</h5>${latest.map(r => `<div class="orow"><div><a href="${U.esc(r.i.u)}" target="_blank" rel="noopener"><b>${U.esc(r.i.t)}</b></a><p>${U.esc(r.a.name)} ? ${U.when(r.i.ts)}</p></div></div>`).join('') || '<p class="muted">Nothing in the last 7 days.</p>'}</section></div>` })}
+    ${card({ cls: 'span12', title: 'Account by account', sub: 'Click an account for its latest updates and how it was collected. X, Facebook and Instagram posts cannot be scraped; those rows show news that cites the handle.',
+      body: `<div class="mla-tbl-wrap"><table class="tbl"><thead><tr><th>Account</th><th>Handles</th><th>Collected via</th><th class="r">7 days</th><th class="r">30 days</th><th>Top issue</th><th>Latest</th></tr></thead><tbody>${rows.map(r => `<tr class="click" tabindex="0" data-account="${U.esc(r.a.key)}"><td><b>${U.esc(r.a.name)}</b><small>${U.esc(r.a.group === 'govt' ? 'Government' : r.a.type || r.a.group)}${r.a.user ? ' ? yours' : ''}</small></td><td>${(r.a.handles || []).map(h => C.chBadge(h.platform)).join(' ')}</td><td>${feedBadge(r.a)}</td><td class="r">${r.s.n7}</td><td class="r">${r.s.n30}</td><td>${U.esc(r.s.top)}</td><td>${r.s.last ? `<small>${U.when(r.s.last.ts)}</small>` : '<span class="muted">?</span>'}</td></tr>`).join('')}</tbody></table></div>` })}
+    ${pending.length ? card({ cls: 'span12', title: 'Added by you, not collected yet', sub: 'These are saved in this browser only. Download the watch-list, save it as data/watchlist.json, and run scripts/track.py; the next collection includes them.',
+      body: pending.map(m => `<div class="orow"><div><b>${U.esc(m.name || m.handle)}</b><p>${U.esc(m.platform)} ? ${U.esc(m.handle)}</p></div>${pill('waiting')}</div>`).join('') }) : ''}`;
+  };
+
   V.lib_tracked = S => {
     const tr = ST.tracked.all(), have = {}; tr.forEach(x => (have[(x.platform + ':' + x.handle).toLowerCase()] = 1));
     const presets = [];
     R.govHandles.filter(h => h.status === 'verified').forEach(h => presets.push({ platform: h.platform, handle: h.handle, name: h.owner, group: /CM|Chief|DPR|Directorate/.test(h.owner) ? 'govt' : 'govt' }));
     R.mediaCatalog.forEach(m => { [['X', m.x], ['Facebook', m.fb], ['Instagram', m.ig], ['YouTube', m.yt]].forEach(p => { if (p[1]) presets.push({ platform: p[0], handle: p[0] === 'X' || p[0] === 'Instagram' ? '@' + p[1] : p[1], name: m.name, group: 'media' }); }); });
-    return `<div class="bento">${card({ cls: 'span12', title: 'Tracked accounts', sub: 'Your watch-list. Saved here; it drives live connectors once an X API key or vendor is added.', right: `<button class="btn" data-form="addTracked">${I('plus', 16)} Add account</button>`,
+    return `<div class="bento">${V.trackedUpdates()}${card({ cls: 'span12', title: 'Tracked accounts', sub: 'Your watch-list. Saved here; it drives live connectors once an X API key or vendor is added.', right: `<button class="btn" data-form="addTracked">${I('plus', 16)} Add account</button>`,
       body: tr.length ? `<table class="tbl"><thead><tr><th>Account</th><th>Platform</th><th>Group</th><th>Notes</th><th></th></tr></thead><tbody>${tr.map(x => `<tr><td><a href="${U.esc(platformUrl(x.platform, x.handle))}" target="_blank" rel="noopener"><b>${U.esc(x.name || x.handle)}</b></a><small>${U.esc(x.handle)}</small></td><td>${C.chBadge(x.platform === 'Web' ? 'News · Online' : x.platform)} ${x.platform}</td><td>${U.esc(x.group || '')}</td><td>${U.esc(x.notes || '')}</td><td><button class="icon-btn" data-del="tracked|${x.id}" aria-label="Remove">${I('trash', 15)}</button></td></tr>`).join('')}</tbody></table>` : empty('Nothing on the watch-list yet', 'Add accounts below with one click, or add your own.') })}
       ${card({ cls: 'span12', title: 'Verified accounts to add', sub: 'Handles taken from each outlet\'s own website or the DPR site. Individual journalists and creators are not listed: add them yourself.',
         body: `<div class="presets">${presets.map(p => `<div class="preset"><div>${C.chBadge(p.platform)}<div><b>${U.esc(p.name)}</b><small>${U.esc(p.handle)}</small></div></div>${have[(p.platform + ':' + p.handle).toLowerCase()] ? pill('added', 'pos') : `<button class="btn ghost sm" data-track='${U.esc(JSON.stringify(p))}'>${I('plus', 14)} Track</button>`}</div>`).join('')}</div>` })}</div>`;

@@ -331,3 +331,6 @@ input[type=date][data-asof] { width: auto; }
 .cols .cb { flex: 1; min-width: 0; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 6px; }
 .cols .cb i { display: block; width: 100%; max-width: 28px; border-radius: 8px 8px 3px 3px; background: var(--col); opacity: var(--o); transition: height .5s; }
 .cols .cb em { font-style: normal; font-size: 10.5px; color: var(--muted); height: 14px; white-space: nowrap; }
+.party.GGP { background: #E3F5E6; color: #2E8B3E; } [data-theme='dark'] .party.GGP { background: #143321; }
+.mla-tbl td.role { max-width: 190px; font-size: 12px; } .mla-tbl { min-width: 880px; } .card .mla-tbl-wrap { overflow-x: auto; }
+.mcard .kvgrid { margin: 14px 0; }

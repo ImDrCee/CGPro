@@ -121,6 +121,7 @@
   const csvq = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
   function doExport(kind) {
     const stamp = new Date().toISOString().slice(0, 10);
+    if (kind === 'watchlist') return download('watchlist.json', JSON.stringify({ app: 'Jan Darpan', tracked: ST.tracked.all() }, null, 2));
     if (kind === 'all') return download('jan-darpan-backup-' + stamp + '.json', JSON.stringify(ST.exportAll(), null, 2));
     const ls = ST.links.all();
     if (kind === 'json') return download('jan-darpan-links-' + stamp + '.json', JSON.stringify({ app: 'Jan Darpan', links: ls }, null, 2));
@@ -157,7 +158,7 @@
   }
 
   // ───── events ─────
-  const SEL = '[data-view],[data-nav],[data-tab],[data-mode],[data-ask],[data-item],[data-district],[data-district-open],[data-metric],[data-days],[data-close],[data-toggle-theme],[data-copy-brief],[data-form],[data-open-issue],[data-verdict-id],[data-rb-issue],[data-del],[data-export],[data-cmp],[data-track],[data-copy],[data-rv-save],[data-clear-all],.modal';
+  const SEL = '[data-view],[data-nav],[data-tab],[data-mode],[data-ask],[data-item],[data-mla],[data-account],[data-district],[data-district-open],[data-metric],[data-days],[data-close],[data-toggle-theme],[data-copy-brief],[data-form],[data-open-issue],[data-verdict-id],[data-rb-issue],[data-del],[data-export],[data-cmp],[data-track],[data-copy],[data-rv-save],[data-clear-all],.modal';
   function reopen() { if (modal().classList.contains('open') && modal().querySelector('.issuem')) { const h = modal().querySelector('.issuem h3'); if (h) openIssue(h.textContent); } }
   document.addEventListener('click', e => {
     const t = e.target.closest(SEL); if (!t) return;
@@ -168,6 +169,8 @@
     if (d.tab) { S.tab[S.view] = d.tab; history.replaceState(null, '', '#' + S.view + ':' + d.tab); return render({ keepScroll: true, noFocus: true }); }
     if (d.mode) { e.preventDefault(); CGP.setMode(d.mode); return render({ keepScroll: true, noFocus: true }); }
     if (d.ask !== undefined) { closeModal(); return ask(d.ask); }
+    if (d.mla) return openModal(V.mla(d.mla));
+    if (d.account) return openModal(V.account(d.account));
     if (d.item) return openItem(d.item);
     if (d.openIssue) return openIssue(d.openIssue);
     if (t.hasAttribute('data-close')) return closeModal();
@@ -216,6 +219,7 @@
     else if (el.hasAttribute('data-role')) { S.role = el.value; set.set('role', S.role); const r = R.roles.find(x => x.id === S.role); toast('Viewing as ' + r.label); go(r.home); }
     else if (d.tf) { S.tf[d.tf] = el.value; render({ keepScroll: true }); }
     else if (el.hasAttribute('data-seatd')) { S.seatD = el.value; render({ keepScroll: true }); }
+    else if (el.hasAttribute('data-seatp')) { S.seatP = el.value; render({ keepScroll: true }); }
     else if (el.hasAttribute('data-ds')) { S.dsId = el.value; render({ keepScroll: true }); }
     else if (el.hasAttribute('data-pack')) { S.packTopic = el.value; render({ keepScroll: true }); }
     else if (el.hasAttribute('data-asof')) { S.asOf = el.value; render({ keepScroll: true }); }
@@ -243,7 +247,7 @@
 
   // ───── boot ─────
   if (/[?&]still/.test(location.search)) document.documentElement.classList.add('still');
-  CGP.mlas = {};
+  CGP.mlas = CGP.mlas || {};
   CGP.makeSamples();
   const hasLive = !!(g.CGP_LIVE && g.CGP_LIVE.items && g.CGP_LIVE.items.length);
   const qm = (location.search.match(/[?&]mode=(live|sample|both)/) || [])[1];

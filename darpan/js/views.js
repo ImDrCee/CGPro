@@ -220,11 +220,39 @@
         <div class="chips">${l.topics.map(t => `<span class="chip">${U.tshort(t.k)} <b>${t.n}</b></span>`).join('')}</div>
         <button class="link" data-ask="What did ${l.l.name} get covered for in the last 7 days?">Ask about ${l.l.name.split(' ')[0]} ${I('up', 14)}</button></article>`;
     }).join('');
-    const seats = E.seats(x.items).filter(s => (S.seatD === 'all' || s.district === S.seatD) && (!S.seatQ || (s.seat + ' ' + ((CGP.mlas[s.seat] || {}).name || '')).toLowerCase().indexOf(S.seatQ.toLowerCase()) >= 0)).sort((a, b) => b.n - a.n);
-    const tbl = card({ cls: 'span12', title: 'MLAs and constituencies', sub: 'Constituency list is indicative. Import the MLA roster from ECI in the Data tab.',
-      right: `<div class="filters"><input class="search" data-seatq placeholder="Search constituency or MLA" value="${U.esc(S.seatQ)}"/><select data-seatd><option value="all">All districts</option>${R.districts.map(d => `<option value="${d.id}" ${S.seatD === d.id ? 'selected' : ''}>${d.name}</option>`).join('')}</select></div>`,
-      body: `<table class="tbl"><thead><tr><th>Constituency</th><th>District</th><th>MLA</th><th>Party</th><th class="r">Items</th><th class="r">Net</th><th>Top issue</th></tr></thead><tbody>${seats.map(s => { const m = CGP.mlas[s.seat] || {}; return `<tr><td><a class="pinlink" target="_blank" rel="noopener" href="${U.mapsUrl(s.seat + ', ' + U.dname(s.district) + ', Chhattisgarh')}" data-tip="Open in Google Maps">${I('pin', 14)}<b>${s.seat}</b></a></td><td class="muted">${U.dname(s.district)}</td><td>${m.name ? U.esc(m.name) : '<span class="muted">Pending import</span>'}</td><td>${m.party ? `<span class="party ${U.esc(m.party)}">${U.esc(m.party)}</span>` : '<span class="muted">—</span>'}</td><td class="r">${s.n}</td><td class="r"><span class="pill" style="--c:${netColor(s.st.net)}">${s.n ? sgn(s.st.net) : '—'}</span></td><td>${U.esc(s.top)}</td></tr>`; }).join('')}</tbody></table>` });
+    const q = (S.seatQ || '').toLowerCase();
+    const seats = E.seats(x.items).filter(s => {
+      const m = CGP.mlas[s.seat] || {};
+      if (S.seatD !== 'all' && s.district !== S.seatD) return false;
+      if ((S.seatP || 'all') !== 'all' && m.party !== S.seatP) return false;
+      return !q || [s.seat, m.hi, m.name, m.nameHi, m.district, m.role].join(' ').toLowerCase().indexOf(q) >= 0;
+    }).sort((a, b) => ((CGP.mlas[a.seat] || {}).no || 999) - ((CGP.mlas[b.seat] || {}).no || 999));
+    const pc = CGP.partyCount ? CGP.partyCount() : {}, ro = CGP.roster || {};
+    const tiles = Object.keys(pc).length ? `<div class="tiles">${Object.keys(pc).sort((a, b) => pc[b] - pc[a]).map(k => `<div class="tile-s"><span>${U.esc(k)}</span><b>${pc[k]}</b></div>`).join('')}<div class="tile-s"><span>Seats</span><b>${ro.count || 0}</b></div></div>` : '';
+    const tbl = card({ cls: 'span12', title: 'MLAs and constituencies', sub: ro.count ? `All ${ro.count} seats with the sitting MLA. Click a row for the profile. ${U.esc(ro.source)}; roster as of ${U.esc(ro.asOf)}. Roles and by-election changes need a curator check.` : 'Import the MLA roster in the Data tab.',
+      right: `<div class="filters"><input class="search" data-seatq placeholder="Search constituency, MLA or role" value="${U.esc(S.seatQ)}"/><select data-seatd><option value="all">All districts</option>${R.districts.map(d => `<option value="${d.id}" ${S.seatD === d.id ? 'selected' : ''}>${d.name}</option>`).join('')}<option value="other" ${S.seatD === 'other' ? 'selected' : ''}>Other districts</option></select><select data-seatp><option value="all">All parties</option>${Object.keys(pc).map(k => `<option value="${U.esc(k)}" ${S.seatP === k ? 'selected' : ''}>${U.esc(k)}</option>`).join('')}</select></div>`,
+      body: `${tiles}<div class="mla-tbl-wrap"><table class="tbl mla-tbl"><thead><tr><th>#</th><th>Constituency</th><th>District</th><th>MLA</th><th>Party</th><th>Role</th><th class="r">2023 margin</th><th class="r">Items</th><th class="r">Net</th><th>Top issue</th></tr></thead><tbody>${seats.map(s => { const m = CGP.mlas[s.seat] || {}; const dn = m.district || U.dname(s.district); return `<tr class="click" tabindex="0" data-mla="${U.esc(s.seat)}"><td class="muted">${m.no || ''}</td><td><b>${U.esc(s.seat)}</b>${m.reserved && m.reserved !== 'GEN' ? ` <span class="tag neu">${m.reserved}</span>` : ''}${m.hi ? `<small>${U.esc(m.hi)}</small>` : ''}</td><td class="muted">${U.esc(dn)}</td><td>${m.name ? `<b>${U.esc(m.name)}</b>${m.nameHi ? `<small>${U.esc(m.nameHi)}</small>` : ''}` : '<span class="muted">Pending import</span>'}</td><td>${m.party ? `<span class="party ${U.esc(m.party)}">${U.esc(m.party)}</span>` : '<span class="muted">\u2014</span>'}</td><td class="muted role">${U.esc(m.role ? m.role.split(';')[0] : '')}</td><td class="r">${m.margin ? m.margin.toLocaleString('en-IN') : ''}</td><td class="r">${s.n}</td><td class="r"><span class="pill" style="--c:${netColor(s.st.net)}">${s.n ? sgn(s.st.net) : '\u2014'}</span></td><td>${U.esc(s.top)}</td></tr>`; }).join('')}</tbody></table></div>${seats.length ? '' : '<p class="muted">No seat matches the filters.</p>'}` });
     return `<div class="bento"><div class="span12 leaders-grid">${cards}</div>${tbl}</div>`;
+  };
+
+  // MLA profile modal
+  V.mla = seat => {
+    const m = CGP.mlas[seat]; if (!m) return '';
+    const items = (CGP.M && CGP.M.S && CGP.M.S.items) || [];
+    const nm = (m.name || '').toLowerCase();
+    const mine = items.filter(i => i.constituency === seat || (nm.length > 6 && (i.headline || '').toLowerCase().indexOf(nm) >= 0) || (m.nameHi && (i.headline || '').indexOf(m.nameHi) >= 0)).sort((a, b) => b.ts - a.ts);
+    const st = E.stats(mine), con = E.concerns(mine, 3);
+    const wiki = t => 'https://en.wikipedia.org/wiki/' + encodeURIComponent(String(t).replace(/ /g, '_'));
+    const kv = [['Constituency', `${m.no}. ${m.constituency}${m.hi ? ' (' + m.hi + ')' : ''}`], ['Reservation', m.reserved === 'GEN' ? 'General' : m.reserved === 'ST' ? 'Scheduled Tribes' : 'Scheduled Castes'], ['District', m.district],
+      ['Party', m.party], ['Role', m.role || 'Member of the Legislative Assembly'], ['Elected', m.term], ['Votes', m.votes.toLocaleString('en-IN') + ' (' + m.pct + '%)'], ['Winning margin', m.margin.toLocaleString('en-IN')], ['Runner-up', m.runnerUp + ' (' + m.runnerUpParty + ')']];
+    return `<div class="mcard"><button class="mclose" data-close aria-label="Close">${I('close', 18)}</button>
+      <div class="mhead"><span class="party ${U.esc(m.party)}">${U.esc(m.party)}</span><span>MLA \u00b7 ${U.esc(m.district)}</span></div>
+      <h3>${U.esc(m.name)}${m.nameHi ? ' \u00b7 ' + U.esc(m.nameHi) : ''}</h3>
+      <p class="mtext">${U.esc(m.constituency)} constituency. ${m.role ? U.esc(m.role) + '.' : ''}</p>
+      <div class="kvgrid">${kv.map(k => `<div><span>${k[0]}</span><b>${U.esc(k[1])}</b></div>`).join('')}</div>
+      <h5>In the collected coverage</h5>
+      ${mine.length ? `<p class="mtext">${mine.length} items \u00b7 net ${sgn(st.net)} \u00b7 top concerns: ${con.length ? con.map(c => U.esc(c.issue)).join(', ') : '\u2014'}</p><div class="list">${mine.slice(0, 6).map(i => `<div class="orow"><div><a href="${U.esc(i.link || '#')}" target="_blank" rel="noopener"><b>${U.esc(i.headline)}</b></a><p>${U.esc(i.source)} \u00b7 ${U.when(i.ts)}</p></div></div>`).join('')}</div>` : '<p class="muted">No item in the current archive names this seat or MLA. Add links in the Library to build the record.</p>'}
+      <p class="mact"><a class="btn ghost" href="${U.mapsUrl(m.constituency + ', ' + m.district + ', Chhattisgarh')}" target="_blank" rel="noopener">${I('pin', 16)} Google Maps</a> <a class="btn ghost" href="${wiki(m.wiki || m.constituency + ' Assembly constituency')}" target="_blank" rel="noopener">${I('up', 16)} Wikipedia</a> <a class="btn ghost" href="https://results.eci.gov.in/" target="_blank" rel="noopener">${I('up', 16)} ECI results</a> <button class="btn ghost" data-ask="What is said about ${U.esc(m.name)}?">${I('chat', 16)} Ask</button></p></div>`;
   };
 
   // ───────────── Brief ─────────────

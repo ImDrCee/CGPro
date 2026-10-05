@@ -215,8 +215,8 @@
 
     mla(p, scope) {
       const seats = E.seats(scope).filter(s => !p.districts.length || p.districts.indexOf(s.district) >= 0).sort((a, b) => b.n - a.n);
-      const html = `<p class="lead">Constituency coverage for ${T(p)}${p.districts.length ? ' in ' + p.districts.map(U.dname).join(', ') : ''}. The busiest are <b>${seats.slice(0, 3).map(s => s.seat).join(', ')}</b>. MLA names and party need the ECI import (Data tab).</p>
-        ${section('Constituencies', `<table class="tbl"><thead><tr><th>Constituency</th><th>District</th><th>MLA</th><th class="r">Items</th><th class="r">Net</th><th>Top issue</th></tr></thead><tbody>${seats.slice(0, 12).map(s => `<tr><td><b>${s.seat}</b></td><td class="muted">${U.dname(s.district)}</td><td class="muted">${U.esc((CGP.mlas[s.seat] || {}).name || 'Pending import')}</td><td class="r">${s.n}</td><td class="r"><span class="pill" style="--c:${netColor(s.st.net)}">${s.n ? sgn(s.st.net) : '—'}</span></td><td>${U.esc(s.top)}</td></tr>`).join('')}</tbody></table>`)}`;
+      const html = `<p class="lead">Constituency coverage for ${T(p)}${p.districts.length ? ' in ' + p.districts.map(U.dname).join(', ') : ''}. The busiest are <b>${seats.slice(0, 3).map(s => s.seat).join(', ')}</b>. Names and parties come from the bundled 2023 roster; click a row in People \u2192 Leaders &amp; MLAs for the full profile.</p>
+        ${section('Constituencies', `<table class="tbl"><thead><tr><th>Constituency</th><th>District</th><th>MLA</th><th>Party</th><th class="r">Items</th><th class="r">Net</th><th>Top issue</th></tr></thead><tbody>${seats.slice(0, 12).map(s => `<tr><td><b>${s.seat}</b></td><td class="muted">${U.dname(s.district)}</td><td>${U.esc((CGP.mlas[s.seat] || {}).name || 'Pending import')}</td><td>${U.esc((CGP.mlas[s.seat] || {}).party || '')}</td><td class="r">${s.n}</td><td class="r"><span class="pill" style="--c:${netColor(s.st.net)}">${s.n ? sgn(s.st.net) : '—'}</span></td><td>${U.esc(s.top)}</td></tr>`).join('')}</tbody></table>`)}`;
       return { html, ev: E.top(scope.filter(i => seats.slice(0, 3).some(s => s.seat === i.constituency)), 4) };
     },
 

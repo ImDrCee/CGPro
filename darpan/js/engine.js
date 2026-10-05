@@ -22,7 +22,7 @@
     return Math.round(m / 1440) + 'd ago';
   };
   U.when = ts => new Date(ts).toLocaleString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
-  U.dname = id => { const d = R.districts.filter(x => x.id === id)[0]; return d ? d.name : id; };
+  U.dname = id => { const d = R.districts.filter(x => x.id === id)[0]; return d ? d.name : (id === 'other' ? 'Other districts' : id); };
   U.tname = id => { const t = R.topics.filter(x => x.id === id)[0]; return t ? t.name : id; };
   U.tshort = id => { const t = R.topics.filter(x => x.id === id)[0]; return t ? t.short : id; };
   U.chColor = id => { const c = R.channels.filter(x => x.id === id)[0]; return c ? c.color : '#999'; };
@@ -181,6 +181,12 @@
       const con = E.concerns(its, 1)[0];
       out.push({ seat: s, district: d.id, n: its.length, st, top: con ? con.issue : (E.countBy(its, 'issue')[0] || {}).k || '—' });
     }));
+    (R.otherSeats || []).forEach(o => {
+      const its = items.filter(i => i.constituency === o.seat);
+      const st = E.stats(its);
+      const con = E.concerns(its, 1)[0];
+      out.push({ seat: o.seat, district: 'other', n: its.length, st, top: con ? con.issue : (E.countBy(its, 'issue')[0] || {}).k || '\u2014' });
+    });
     return out;
   };
 

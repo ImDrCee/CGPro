@@ -4,3 +4,6 @@
 *.doc
 *.pdf
 *.pptx
+
+data/accounts.json
+__pycache__/

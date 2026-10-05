@@ -40,6 +40,21 @@ python scripts/scrape.py
 
 Python standard library only. It reads Google News RSS month by month for 12 months, outlet RSS feeds where robots.txt allows, and official YouTube channel feeds, then writes `data/live.json` and `data/live.js` (the app loads the latter, so it also works from a double-click). It never fetches article bodies and never touches X, Facebook or Instagram. Re-run, commit and push to refresh the live site.
 
+## Tracking accounts
+
+*Library → Tracked accounts* lists the verified government and media handles. `python scripts/track.py` collects the latest public updates for every one of them (default last 30 days) and writes `data/accounts.js`; the page then shows key points from the last 7 days, an account-by-account table, and a per-account drill-down. Those items also join the Live dataset.
+
+| Platform | What is collected |
+|---|---|
+| Website | The site's RSS feed (robots.txt respected) and Google News results for `site:<domain>` |
+| YouTube | The channel's public RSS feed: titles, dates, view counts |
+| X, Facebook, Instagram | **Not scraped** (platform terms). For government and political handles the tool collects news articles that cite the handle. Posts need an official API or a licensed vendor, or can be pasted into the Library |
+
+Accounts you add with the **Track** button are saved in your browser only. To have the collector fetch them too, use *Download watch-list*, save the file as `data/watchlist.json`, run `python scripts/track.py`, then commit and push.
+
+## The MLA roster
+
+*People → Leaders & MLAs* lists all 90 seats with the sitting MLA, party, reservation, official district, 2023 votes, margin and runner-up, cabinet role, and Hindi names; click a row for a profile with maps, Wikipedia and ECI links and any coverage in the archive. `python scripts/build_mlas.py` rebuilds `data/mlas.js` from public Wikipedia pages (2023 results, the Raipur City South by-election of 2024, the Sai ministry). Check it against the Election Commission of India before external use; later by-elections, resignations and cabinet changes are not tracked automatically.
 ## Run locally
 
 Double-click `JanDarpan.html`, or `python -m http.server 8793` and open <http://127.0.0.1:8793/JanDarpan.html>. Useful URL options: `?mode=live|sample|both`, `?ask=<question>`, `?still` (no animations).
@@ -56,6 +71,7 @@ darpan/js/store.js        persistence (links, watch-list, ledger, corrections, v
 darpan/js/qa.js           question parsing and answers (numbers are computed, never generated)
 darpan/js/views*.js       screens                darpan/js/app.js  state, events, import/export
 scripts/scrape.py         public-feed collector  data/live.js      collected headlines
+scripts/track.py          tracked-account updates  data/accounts.js\nscripts/build_mlas.py     MLA roster builder      data/mlas.js  darpan/js/roster.js
 PRO.html + js/ + css/     Jan Pulse (v1)
 ```
 
@@ -65,4 +81,4 @@ Public data only, public figures in public roles, no profiling of private citize
 
 ## Known limits
 
-Auto-tags are rule-based and will be wrong sometimes (use the review queue). Memory depth in Live mode is one year and sparse; seasonal reads need more. Commitment status is "per coverage", not official data. Role dates and the seeded commitments come from public reports and need curator verification. MLA names need an ECI roster import. Not built: image/video fingerprints, calibrated risk bands, forecasts, multi-user accounts, SMS/WhatsApp alerts.
+Auto-tags are rule-based and will be wrong sometimes (use the review queue). Memory depth in Live mode is one year and sparse; seasonal reads need more. Commitment status is "per coverage", not official data. Role dates and the seeded commitments come from public reports and need curator verification. The MLA roster is a Wikipedia snapshot and needs an ECI check. Not built: image/video fingerprints, calibrated risk bands, forecasts, multi-user accounts, SMS/WhatsApp alerts.

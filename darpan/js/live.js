@@ -1,4 +1,4 @@
-﻿/* Live data: rule-based tagger for Hindi + English headlines, story clustering, link normalisation and dataset assembly.
+/* Live data: rule-based tagger for Hindi + English headlines, story clustering, link normalisation and dataset assembly.
    Tags are AUTO and UNVERIFIED. Low-confidence items go to the review queue; curator corrections override them. */
 (function (g) {
   const CGP = g.CGP, R = CGP.ref, U = CGP.U, ST = CGP.store;
@@ -15,7 +15,7 @@
   const CGSIG = rxi(['chhattisgarh|छत्तीसगढ़|छत्तीसगढ|chhattisgarhi|छत्तीसगढ़ी|नवा रायपुर|साय|बघेल|महंत|बैज|सिंहदेव|महतारी|नियद|अरुण साव|विजय शर्मा|hasdeo|हसदेव|व्यापम|cspdcl|मार्कफेड|bhilai|भिलाई|\\bcg\\b|राज्योत्सव'].concat(R.districts.map(d => d.kw), [R.otherPlaces]).join('|'));
   const CGSRC = rxi('lalluram|dainik chhattisgarh|khabar36|chhattisgarh|cg news|cmo ');
   const SEATS = [];
-  R.districts.forEach(d => d.seats.forEach(s => SEATS.push([s, s.toLowerCase()])));
+  if (R.seatNames && R.seatNames.length) R.seatNames.forEach(s => SEATS.push(s)); else R.districts.forEach(d => d.seats.forEach(s => SEATS.push([s, s.toLowerCase()])));
   const cnt = (s, rx) => { const m = s.match(rx); return m ? m.length : 0; };
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const dev = s => { let d = 0, l = 0; for (const c of s) { if (/[\u0900-\u097F]/.test(c)) d++; if (/[A-Za-z\u0900-\u097F]/.test(c)) l++; } return l ? d / l : 0; };
@@ -134,7 +134,11 @@
   // ───── assembly ─────
   L.liveItems = function () {
     if (L._live) return L._live;
-    const src = (g.CGP_LIVE && g.CGP_LIVE.items) || [];
+    const base = (g.CGP_LIVE && g.CGP_LIVE.items) || [], have = {};
+    base.forEach(r => (have[r.id] = 1));
+    const extra = [];
+    ((g.CGP_ACCOUNTS && g.CGP_ACCOUNTS.accounts) || []).forEach(a => a.items.forEach(r => { if (!have[r.id]) { have[r.id] = 1; extra.push(r); } }));
+    const src = base.concat(extra);
     const all = src.map(r => L.tag(r));
     const items = all.filter(i => !i.offState);
     CGP.liveExcluded = all.length - items.length;
