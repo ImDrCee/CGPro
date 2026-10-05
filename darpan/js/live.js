@@ -13,7 +13,7 @@
   const NEG = rxg(R.lex.neg), POS = rxg(R.lex.pos), OPP = rxi(R.lex.opp), GOVT = rxi(R.lex.govt), BJP = rxi(R.lex.bjp);
   const MIS = /अफवाह|फर्जी|भ्रामक|वायरल|rumou?r|fake|misleading|false claim|hoax/i;
   const CGSIG = rxi(['chhattisgarh|छत्तीसगढ़|छत्तीसगढ|chhattisgarhi|छत्तीसगढ़ी|नवा रायपुर|साय|बघेल|महंत|बैज|सिंहदेव|महतारी|नियद|अरुण साव|विजय शर्मा|hasdeo|हसदेव|व्यापम|cspdcl|मार्कफेड|bhilai|भिलाई|\\bcg\\b|राज्योत्सव'].concat(R.districts.map(d => d.kw), [R.otherPlaces]).join('|'));
-  const CGSRC = rxi('ibc ?24|bansal|lalluram|dainik chhattisgarh|deshbandhu|haribhoomi|khabar36|chhattisgarh|cg news|dblive|db live');
+  const CGSRC = rxi('lalluram|dainik chhattisgarh|khabar36|chhattisgarh|cg news|cmo ');
   const SEATS = [];
   R.districts.forEach(d => d.seats.forEach(s => SEATS.push([s, s.toLowerCase()])));
   const cnt = (s, rx) => { const m = s.match(rx); return m ? m.length : 0; };

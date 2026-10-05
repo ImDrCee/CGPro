@@ -67,17 +67,9 @@
 
   C.columns = (vals, labels, o) => {
     o = o || {};
-    const W = 400, H = o.h || 120, B = 18, n = vals.length, max = Math.max.apply(null, vals.concat([1]));
-    const bw = (W / n) * 0.62, col = o.color || 'var(--pri)';
-    let out = '';
-    vals.forEach((v, i) => {
-      const h = (v / max) * (H - B - 4), xx = (W / n) * i + (W / n - bw) / 2;
-      out += `<rect x="${xx}" y="${H - B - h}" width="${bw}" height="${Math.max(2, h)}" rx="${Math.min(6, bw / 2)}" fill="${col}" opacity="${0.35 + 0.65 * (v / max)}" data-tip="${U.esc(labels[i] + ' · ' + v)}"/>`;
-      if (n <= 10 || i % Math.ceil(n / 8) === 0) out += `<text x="${xx + bw / 2}" y="${H - 4}" class="gt" text-anchor="middle">${labels[i]}</text>`;
-    });
-    return `<svg class="chart" viewBox="0 0 ${W} ${H}" width="100%">${out}</svg>`;
+    const n = vals.length, max = Math.max.apply(null, vals.concat([1])), every = Math.ceil(n / 10);
+    return `<div class="cols" style="--h:${o.h || 120}px;--col:${o.color || 'var(--pri)'}">${vals.map((v, i) => `<div class="cb" data-tip="${U.esc(labels[i] + ' · ' + v)}"><i style="height:${Math.max(3, (v / max) * 100)}%;--o:${(0.35 + 0.65 * (v / max)).toFixed(2)}"></i><em>${i % every === 0 ? labels[i] : ''}</em></div>`).join('')}</div>`;
   };
-
   C.donut = (parts, o) => {
     o = o || {};
     const S = o.size || 160, th = o.thick || 20, r = (S - th) / 2, cx = S / 2, c = 2 * Math.PI * r;

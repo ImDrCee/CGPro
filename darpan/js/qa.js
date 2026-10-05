@@ -139,7 +139,7 @@
       });
       const ch = E.countBy(items, 'channel').map(x => ({ v: x.n, color: U.chColor(x.k), label: x.k }));
       const html = `<p class="lead">In ${T(p)}, the Chief Minister was mentioned in <b>${s.n}</b> items across <b>${ch.length}</b> channels. <b>${U.pct(s.support, s.n)}%</b> were supportive and <b>${U.pct(s.critical, s.n)}%</b> critical (net <b>${sgn(s.net)}</b>). Biggest themes: <b>${topics.slice(0, 3).map(t => t.label).join(', ')}</b>.</p>
-        ${tiles([{ l: 'Mentions', v: s.n, d: d && d.t, dc: d && d.c }, { l: 'Est. reach', v: U.fmt(s.reach) }, { l: 'Supportive', v: U.pct(s.support, s.n) + '%' }, { l: 'Critical', v: U.pct(s.critical, s.n) + '%' }])}
+        ${tiles([{ l: 'Mentions', v: s.n, d: d && d.t, dc: d && d.c }, { l: 'Est. reach', v: (s.reach ? U.fmt(s.reach) : '—') }, { l: 'Supportive', v: U.pct(s.support, s.n) + '%' }, { l: 'Critical', v: U.pct(s.critical, s.n) + '%' }])}
         ${section('Channel mix', C.stack(ch) + `<div class="legend">${ch.map(c => `<span><i style="background:${c.color}"></i>${c.label} ${c.v}</span>`).join('')}</div>`)}
         ${section('What was written about the CM', C.hbars(topics))}
         ${section('Most amplified', E.top(items, 3).map(C.postRow).join(''))}`;
@@ -225,7 +225,7 @@
       if (!items.length) return none(p, ' mentioning ' + p.leader);
       const s = E.stats(items), l = R.leaders.filter(x => x.name === p.leader)[0];
       const html = `<p class="lead"><b>${p.leader}</b> (${l.role}, ${l.party}) appeared in <b>${s.n}</b> items in ${T(p)}${l.group === 'govt' ? `: <b>${U.pct(s.support, s.n)}%</b> supportive, <b>${U.pct(s.critical, s.n)}%</b> critical` : `, mostly in coverage of <b>${E.countBy(items, 'topic').slice(0, 2).map(x => U.tname(x.k)).join('</b> and <b>')}</b>`}.</p>
-        ${tiles([{ l: 'Mentions', v: s.n }, { l: 'Est. reach', v: U.fmt(s.reach) }, l.group === 'govt' ? { l: 'Net', v: sgn(s.net) } : { l: 'Avg traction', v: s.avgTraction }, { l: 'Avg traction', v: s.avgTraction }].filter((t, i, a) => i < 3 || l.group === 'govt'))}
+        ${tiles([{ l: 'Mentions', v: s.n }, { l: 'Est. reach', v: (s.reach ? U.fmt(s.reach) : '—') }, l.group === 'govt' ? { l: 'Net', v: sgn(s.net) } : { l: 'Avg traction', v: s.avgTraction }, { l: 'Avg traction', v: s.avgTraction }].filter((t, i, a) => i < 3 || l.group === 'govt'))}
         ${section('Linked topics', C.hbars(E.countBy(items, 'topic').slice(0, 5).map(x => ({ label: U.tname(x.k), value: x.n }))))}
         ${section('Top items', E.top(items, 3).map(C.postRow).join(''))}`;
       return { html, ev: E.top(items, 5) };
@@ -236,7 +236,7 @@
       const d = R.districts.filter(x => x.id === p.district)[0], s = E.stats(scope);
       const con = E.concerns(scope, 4, p.range);
       const html = `<p class="lead"><b>${d.name}</b> (${d.note}) had <b>${s.n}</b> items${p.topics.length ? ' on <b>' + p.topics.map(U.tshort).join(' / ') + '</b>' : ''} in ${T(p)}, net <b>${sgn(s.net)}</b>. ${con.length ? 'Top concern: <b>' + U.esc(con[0].issue) + '</b>.' : ''}</p>
-        ${tiles([{ l: 'Items', v: s.n }, { l: 'Est. reach', v: U.fmt(s.reach) }, { l: 'Critical', v: U.pct(s.critical, s.n) + '%' }, { l: 'Supportive', v: U.pct(s.support, s.n) + '%' }])}
+        ${tiles([{ l: 'Items', v: s.n }, { l: 'Est. reach', v: (s.reach ? U.fmt(s.reach) : '—') }, { l: 'Critical', v: U.pct(s.critical, s.n) + '%' }, { l: 'Supportive', v: U.pct(s.support, s.n) + '%' }])}
         ${section('Concerns raised', C.hbars(con.map(c => ({ label: U.esc(c.issue), value: c.score, right: c.n + ' items', color: 'var(--neg)', sub: U.tname(c.topic) }))))}
         ${section('Most amplified', E.top(scope, 3).map(C.postRow).join(''))}`;
       return { html, ev: E.top(scope, 5) };
@@ -290,7 +290,7 @@
 
   // ───── memory and history intents ─────
   const STOP = /^(what|which|show|tell|about|from|with|that|this|have|were|been|last|days|posts|happen|happened|before|earlier|there|trouble|again|issue|issues|time|previous|previously|many|often|does|come|came|seen|ever|year)$/;
-  const lifeRow = e => `<div class="orow"><div><b>${CGP.M.lifecycle(e)}</b><p>${Object.keys(e.dists).sort((a, b) => e.dists[b] - e.dists[a]).slice(0, 3).map(U.dname).join(', ') || 'Unplaced'} · ${e.ids.length} items</p></div>${CGP.W.ev(e.ids, 1).replace('<span>Evidence</span>', '')}</div>`;
+  const lifeRow = e => `<div class="orow"><div><b>${CGP.M.lifecycle(e)}</b><p>${Object.keys(e.dists).sort((a, b) => e.dists[b] - e.dists[a]).slice(0, 3).map(U.dname).join(', ') || 'place not stated'} · ${e.ids.length} items</p></div>${CGP.W.ev(e.ids, 1).replace('<span>Evidence</span>', '')}</div>`;
   Object.assign(A, {
     history(p) {
       const M = CGP.M, W = CGP.W, St = M.S;
@@ -300,7 +300,7 @@
       if (!cands.length) return { html: `<p class="lead">I could not match that to an issue in the archive (it starts ${U.dstr(St.dmin)}). Try naming the issue or topic, for example “Has paddy procurement trouble happened before?”.</p>` };
       const h0 = M.historyLine(cands[0].k, p.district);
       const lead = h0.kind === 'none' ? `For <b>${U.esc(cands[0].k)}</b>: ${U.esc(h0.text)}` : `Yes. For <b>${U.esc(cands[0].k)}</b>: ${U.esc(h0.text)}`;
-      const blocks = cands.map(c => { const pre = M.precedents(c.k, p.district, 3), h = M.historyLine(c.k, p.district); return `<div class="blk"><h5>${U.esc(c.k)}</h5>${W.hist(c.k, p.district)}${pre.length ? pre.map(lifeRow).join('') : '<p class="muted sm">No closed precedent yet.</p>'}</div>`; }).join('');
+      const blocks = cands.map(c => { const pre = M.precedents(c.k, p.district, 3), h = M.historyLine(c.k, p.district); return `<div class="blk"><h5>${U.esc(c.k)}</h5>${W.hist(c.k, p.district)}${c === cands[0] ? (pre.length ? pre.map(lifeRow).join('') : '<p class="muted sm">No closed precedent yet.</p>') : ''}</div>`; }).join('');
       return { html: `<p class="lead">${lead}</p>${blocks}<p class="muted sm">Precedents are matched by issue, topic and place. Association only; episode counts show how much evidence stands behind each line.</p>`, ev: h0.ids ? h0.ids.map(id => CGP.index[id]).filter(Boolean) : [] };
     },
     outlook(p) {

@@ -1,4 +1,4 @@
-﻿/* Views, part 3: Voices, Social, People, Library, forms, issue modal. */
+/* Views, part 3: Voices, Social, People, Library, forms, issue modal. */
 (function (g) {
   const CGP = g.CGP, R = CGP.ref, E = CGP.E, U = CGP.U, C = CGP.C, V = CGP.V, I = CGP.icon, M = CGP.M, ST = CGP.store, W = CGP.W, L = CGP.live;
   const DAY = 86400000;
@@ -82,7 +82,7 @@
       <div class="mhead"><span class="chip">${U.tname(topic || 'governance')}</span><span>${arr.length} items in archive · ${last7} in 7 days (${prev7} the week before)</span></div>
       <h3>${U.esc(name)}</h3>${W.hist(name)}
       <div class="mgrid">
-        <section><h5>Precedents</h5>${pre.length ? pre.map(e => `<div class="orow"><div><b>${M.lifecycle(e)}</b><p>${Object.keys(e.dists).sort((a, b) => e.dists[b] - e.dists[a]).slice(0, 3).map(U.dname).join(', ') || 'Unplaced'} · ${e.issue === name ? 'same issue' : 'same topic'}</p></div>${W.ev(e.ids, 2).replace('<span>Evidence</span>', '')}</div>`).join('') : '<p class="muted">No closed precedent in the archive.</p>'}</section>
+        <section><h5>Precedents</h5>${pre.length ? pre.map(e => `<div class="orow"><div><b>${M.lifecycle(e)}</b><p>${Object.keys(e.dists).sort((a, b) => e.dists[b] - e.dists[a]).slice(0, 3).map(U.dname).join(', ') || 'place not stated'} · ${e.issue === name ? 'same issue' : 'same topic'}</p></div>${W.ev(e.ids, 2).replace('<span>Evidence</span>', '')}</div>`).join('') : '<p class="muted">No closed precedent in the archive.</p>'}</section>
         <section><h5>What tended to follow a response</h5>${pb ? `<p>${U.esc(pb.text)}</p>` : '<p class="muted">No reliable logged responses on this issue or topic yet.</p>'}<button class="btn ghost" data-form="logAction" data-arg="${U.esc(name)}">${I('plus', 16)} Log a response</button></section>
         <section><h5>Related patterns</h5>${rel.length ? rel.slice(0, 3).map(W.corr).join('') : '<p class="muted">No chain or common factor found for this issue.</p>'}</section>
         <section><h5>Rebuttal skeleton</h5>${rb.claim ? `<p class="claim">Latest line in coverage: “${U.esc(rb.claim)}”</p>` : ''}<ol class="acts">${rb.draft.map(d => `<li>${U.esc(d)}</li>`).join('')}</ol>

@@ -991,18 +991,45 @@ class Collector:
         self.log(f"[summary] live.json={json_size} bytes")
         self.log(f"[summary] live.js={js_size} bytes")
 
-    def run(self):
-        self.run_google_news()
-        self.run_youtube()
-        self.run_outlet_rss()
+    def load_existing(self):
+        """Resume from data/live.json so a later run can add phases without refetching earlier ones."""
+        with open(LIVE_JSON_PATH, "r", encoding="utf-8") as handle:
+            payload = json.load(handle)
+        self.items = list(payload.get("items", []))
+        for item in self.items:
+            self.seen_links.add(normalize_link(item.get("u", "")))
+            self.seen_titles.add(normalize_title(item.get("t", "")))
+        for index, stats in enumerate(payload.get("meta", {}).get("sources", [])):
+            self.source_stats[f"prev:{index}"] = dict(stats)
+        self.log(f"[resume] loaded {len(self.items)} items and {len(self.source_stats)} source records")
+
+    def run(self, phases=("google", "youtube", "rss")):
+        if "google" in phases:
+            self.run_google_news()
+        if "youtube" in phases:
+            self.run_youtube()
+        if "rss" in phases:
+            self.run_outlet_rss()
         payload, json_size, js_size = self.write_checkpoint("final")
         self.print_summary(payload, json_size, js_size)
 
 
 def main():
+    """Usage: python scripts/scrape.py [--resume] [--phases=google,youtube,rss]"""
+    import sys
+
+    phases = ("google", "youtube", "rss")
+    resume = False
+    for arg in sys.argv[1:]:
+        if arg == "--resume":
+            resume = True
+        elif arg.startswith("--phases="):
+            phases = tuple(p.strip() for p in arg.split("=", 1)[1].split(",") if p.strip())
     collector = Collector()
     try:
-        collector.run()
+        if resume:
+            collector.load_existing()
+        collector.run(phases)
     except Exception as exc:
         collector.log(f"[fatal] {exc.__class__.__name__}: {exc}")
         try:
