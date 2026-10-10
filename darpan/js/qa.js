@@ -23,7 +23,7 @@
     let m;
     if (/yesterday/.test(s)) { const t = U.todayStart(); p.range = [t - DAY, t]; p.label = 'yesterday'; p.days = 1; }
     else if (/\btoday\b|last 24|past 24|24 ?h/.test(s)) { p.range = [U.todayStart(), Date.now() + 1]; p.label = 'today'; p.days = 1; }
-    else if ((m = s.match(/(?:last|past|previous|in the)\s+(\d+)\s*(day|week|month)/))) { const n = Math.min(365, +m[1] * { day: 1, week: 7, month: 30 }[m[2]]); p.days = n; p.label = 'last ' + n + ' days'; }
+    else if ((m = s.match(/(?:last|past|previous|in the|over(?: the)?(?: last| past)?)\s+(\d+)\s*(day|week|month)/))) { const n = Math.min(365, +m[1] * { day: 1, week: 7, month: 30 }[m[2]]); p.days = n; p.label = 'last ' + n + ' days'; }
     else if (/this week|last week|past week/.test(s)) { p.days = 7; p.label = 'last 7 days'; }
     else if (/this month|last month|past month|\bmonth\b/.test(s)) { p.days = 30; p.label = 'last 30 days'; }
     else if (/this year|last year|past year/.test(s) && !/same period|year on year|vs\.? last year/.test(s)) { p.days = 365; p.label = 'last 365 days'; }
@@ -34,7 +34,8 @@
     else if ((m = s.match(/\b(?:in|during)\s+(20\d\d)\b/))) { p.range = [new Date(+m[1], 0, 1).getTime(), new Date(+m[1] + 1, 0, 1).getTime()]; p.label = m[1]; p.days = 365; }
     else if ((m = s.match(/\bsince\s+(20\d\d)\b/))) { p.range = [new Date(+m[1], 0, 1).getTime(), Date.now() + 1]; p.label = 'since ' + m[1]; p.days = 365; }
     if (mo) p.month = MN.indexOf(mo[1].slice(0, 3));
-    if ((m = s.match(/next\s+(\d+)\s*(week|month)/))) p.ahead = +m[1] * (m[2] === 'week' ? 7 : 30);    if (!p.range) { p.range = E.range(p.days); p.label = p.label || (p.days <= 1 ? 'last 24 hours' : 'last ' + p.days + ' days'); }
+    if ((m = s.match(/next\s+(\d+)\s*(week|month)/))) p.ahead = +m[1] * (m[2] === 'week' ? 7 : 30);    p.explicit = !!(p.range || p.label);
+    if (!p.range) { p.range = E.range(p.days); p.label = p.label || (p.days <= 1 ? 'last 24 hours' : 'last ' + p.days + ' days'); }
 
     const pos = {};
     R.districts.forEach(d => {
@@ -118,7 +119,7 @@
     if (p.speaker && ['traction', 'topic_count', 'misinfo'].indexOf(p.intent) >= 0) scope = scope.filter(i => i.speakerType === p.speaker);
     if (p.topics.length && ['district', 'concerns', 'negative', 'cm', 'opposition', 'misinfo', 'brief'].indexOf(p.intent) >= 0) scope = scope.filter(i => p.topics.indexOf(i.topic) >= 0);
     const out = { p, html: '', ev: [] };
-    const fn = A[p.intent] || A.search;
+    const fn = A[p.intent] || (Q.extra && Q.extra[p.intent]) || A.search;
     const r = fn(p, scope, all, f);
     out.html = r.html; out.ev = r.ev || [];
     out.html += evidence(out.ev);
