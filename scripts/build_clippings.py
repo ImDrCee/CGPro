@@ -48,6 +48,26 @@ def date_from_name(name):
     return "%04d-%02d-%02d" % (y, MONTHS[mon], d)
 
 
+def resolve_date(name_date, texts):
+    """The file name is a hint; the dates printed in the pages are the truth. Use the cover date when the
+    pages agree with it or print no readable day, and the most common printed day otherwise."""
+    from collections import Counter
+    cnt = Counter()
+    for t in texts:
+        for m in re.finditer(r"(\d{2})\s*(Sep|Oct|Nov|Dec|Aug)\w*\s*2026", t):
+            cnt["2026-%02d-%s" % ({"Aug": 8, "Sep": 9, "Oct": 10, "Nov": 11, "Dec": 12}[m.group(2)], m.group(1))] += 1
+    top = cnt.most_common(1)
+    if top and top[0][1] >= 8:
+        return top[0][0]
+    cover = texts[0] if texts else ""
+    m = re.search(r"(\d{1,2})\s*(जनवरी|फरवरी|मार्च|अप्रैल|मई|जून|जुलाई|अगस्त|सितंबर|सितम्बर|अक्टूबर|नवंबर|दिसंबर)\s*(20\d\d)", cover)
+    if m:
+        mon = MONTHS.get(m.group(2))
+        if mon:
+            return "%04d-%02d-%02d" % (int(m.group(3)), mon, int(m.group(1)))
+    return name_date
+
+
 def clean(s):
     s = JUNK.sub(" ", s)
     return re.sub(r"\s+", " ", s).strip(" -:;,.")
@@ -172,6 +192,13 @@ def main():
                 n = min(n, limit)
             res = dict(ex.map(page_job, [(path, i, date) for i in range(n)], chunksize=3))
             texts = [(res[i] or {}).get("text", "") for i in range(n)]
+            real = resolve_date(date, texts)
+            if real != date:
+                print("  note: %s holds the issue of %s" % (name, real), flush=True)
+                src, dst = os.path.join(CLIPS, date), os.path.join(CLIPS, real)
+                if os.path.isdir(src) and not os.path.exists(dst):
+                    os.rename(src, dst)
+                date = real
             papers = smooth([detect_paper(t) for t in texts])
             for i in range(n):
                 r = res[i]

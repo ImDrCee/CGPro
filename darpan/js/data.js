@@ -190,7 +190,7 @@
     ],
     // Aggregates from the team's manually compiled daily newspaper clippings (OCR keyword counts; approximate, no clipping text kept).
     clipStats: {
-      issues: 16, clippings: 1286, from: '2026-09-23', to: '2026-10-10',
+      issues: 16, clippings: 1286, from: '2026-09-23', to: '2026-10-08',
       note: 'Scanned clippings were read with OCR. Topic shares are keyword matches, so they overlap and are approximate.',
       topics: [['CM and government', 28], ['BJP organisation', 26], ['PM Modi and the Centre', 24], ['Law and order, crime', 22], ['Congress and opposition', 20], ['Education and schools', 19], ['Health', 16], ['Mahtari Vandan, women', 15], ['Naxal, Bastar', 14], ['Jobs, recruitment', 14], ['Roads, rail, infrastructure', 13], ['SIR, voter list, election commission', 12], ['Industry, investment', 10], ['Farmers, paddy, fertiliser', 9], ['Municipal and panchayat elections', 7], ['Tribal affairs, reservation', 6], ['Power, electricity', 6], ['Coal, mining, Hasdeo', 4], ['Scams and agencies', 4], ['Drugs', 4]],
       places: [['Raipur', 691], ['New Delhi', 240], ['Bastar', 161], ['Bilaspur', 122], ['Durg', 107], ['Bhilai', 68], ['Jagdalpur', 63], ['Dhamtari', 48], ['Surguja', 46], ['Rajnandgaon', 43], ['Korba', 40], ['Kanker', 35], ['Raigarh', 31], ['Sukma', 31]]

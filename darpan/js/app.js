@@ -255,7 +255,7 @@
     const have = {}; ST.tracked.all().forEach(x => (have[(x.platform + ':' + x.handle).toLowerCase()] = 1));
     let n = 0;
     R.mediaCatalog.filter(m => m.clip).forEach(m => {
-      const note = 'In the daily clippings' + (m.clip.pages ? ' (' + m.clip.pages + ' clippings, 23 Sep to 10 Oct)' : '');
+      const note = 'In the daily clippings' + (m.clip.pages ? ' (' + m.clip.pages + ' clippings, 23 Sep to 8 Oct)' : '');
       [['Web', m.site], ['X', m.x && '@' + m.x], ['Facebook', m.fb], ['Instagram', m.ig && '@' + m.ig], ['YouTube', m.yt]].forEach(p => {
         if (!p[1] || have[(p[0] + ':' + p[1]).toLowerCase()]) return;
         ST.tracked.add({ platform: p[0], handle: p[1], name: m.name, group: 'media', notes: note, active: true, clip: true }); n++;

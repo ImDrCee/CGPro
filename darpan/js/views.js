@@ -115,10 +115,9 @@
       <section class="card chatcard">${chat}
         <form class="composer" id="composer"><input id="q" autocomplete="off" placeholder="Ask anything, e.g. “Korba power cuts in the last 3 days” or “Compare Raipur vs Bilaspur”"/><button class="send" type="submit" aria-label="Send">${I('send', 18)}</button></form></section>
       <aside class="side">
-        ${card({ title: 'Try asking', body: `<div class="sugs">${[
+        ${card({ title: 'Key Asks', body: `<div class="sugs">${[
           'Key negative sentiment this week', 'Issues raised by Congress in the last 3 days', 'Top posts on Mahtari Vandan', 'Farmers concerns in Janjgir-Champa',
           'Compare Raipur vs Bilaspur', 'How has coverage of Vishnu Deo Sai changed over 3 months?', 'Which of our leaders improved their image most over 3 months?', 'How many X posts on farmers?', 'What did Bhupesh Baghel say?', 'Brief for today'].map(s => `<button data-ask="${s}">${I('search', 14)}${s}</button>`).join('')}</div>` })}
-        ${card({ title: 'How it answers', body: `<ol class="how"><li><b>Parse</b> window, district, topic, channel, intent</li><li><b>Query</b> the store of 25+ parameters per item</li><li><b>Compose</b> with numbers and evidence links</li></ol><p class="muted sm">Every number is computed from the data and links to its evidence.</p>` })}
       </aside></div>`;
   };
 

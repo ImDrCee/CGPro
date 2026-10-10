@@ -47,11 +47,12 @@
     return `<button class="btn sm" data-clipfolder>${I('link', 14)} Link clipping images</button>`;
   };
 
+  const wday = d => new Date(d + 'T12:00:00').toLocaleDateString('en-IN', { weekday: 'short' });
   function dayRail(S) {
     const f = F(S), all = clips(), days = {};
     all.forEach(i => (days[i.clipDate] = (days[i.clipDate] || 0) + 1));
-    const ds = Object.keys(days).sort().reverse();
-    return `<div class="dayrail"><button class="chip ${f.day === 'all' ? 'on' : ''}" data-cf="day=all">All days <b>${all.length}</b></button>${ds.map(d => `<button class="chip ${f.day === d ? 'on' : ''}" data-cf="day=${d}">${dlabel(d)} <b>${days[d]}</b></button>`).join('')}</div>`;
+    const ds = Object.keys(days).sort().reverse(), max = Math.max.apply(null, ds.map(d => days[d]).concat([1]));
+    return `<div class="daygrid"><button class="daytile all ${f.day === 'all' ? 'on' : ''}" data-cf="day=all"><span class="dw">All</span><b class="dd">${ds.length}</b><span class="dm">days</span><em>${all.length} clippings</em></button>${ds.map(d => { const p = d.split('-'); return `<button class="daytile ${f.day === d ? 'on' : ''}" data-cf="day=${d}" data-tip="${days[d]} clippings on ${dlabel(d)}"><span class="dw">${wday(d)}</span><b class="dd">${+p[2]}</b><span class="dm">${MON[+p[1] - 1]}</span><em>${days[d]} clippings</em><i style="width:${Math.round(100 * days[d] / max)}%"></i></button>`; }).join('')}</div>`;
   }
 
   function card1(i) {
@@ -75,9 +76,9 @@
     const shown = l.slice(0, f.n);
     const maxIss = st.iss.length ? st.iss[0][1] : 1;
     return `<div class="bento">
-      ${card({ cls: 'span12', title: f.day === 'all' ? 'All clippings' : 'Clippings of ' + dlabel(f.day), sub: 'Read from the team\'s daily newspaper clippings. Every clipping is tagged like any other item and counts in the analysis.', right: `<div class="row-btns">${linkBar()}</div>`,
+      ${card({ cls: 'span12', title: f.day === 'all' ? 'All clippings' : 'Clippings of ' + dlabel(f.day), sub: 'Read from the team\'s daily newspaper clippings. Every clipping is tagged like any other item and counts in the analysis.', right: `<div class="row-btns"><button class="btn" data-reader="${f.day === 'all' ? [...new Set(all.map(i => i.clipDate))].sort().reverse()[0] : f.day}">${I('news', 16)} Read the ${dlabel(f.day === 'all' ? [...new Set(all.map(i => i.clipDate))].sort().reverse()[0] : f.day)} file</button>${linkBar()}</div>`,
         body: `${dayRail(S)}
-        <div class="filters cf">${`<button class="chip ${f.paper === 'all' ? 'on' : ''}" data-cf="paper=all">All papers</button>`}${pl.map(p => `<button class="chip ${f.paper === p ? 'on' : ''}" data-cf="paper=${U.esc(p)}">${badge(p)} ${U.esc(pname(p))} <b>${papers[p]}</b></button>`).join('')}</div>
+        <div class="filters cf">${`<button class="chip ${f.paper === 'all' ? 'on' : ''}" data-cf="paper=all">All papers</button>`}${pl.map(p => `<button class="chip ${f.paper === p ? 'on' : ''}" data-cf="paper=${U.esc(p)}">${badge(p)} ${U.esc(pname(p))} <span class="cnt">${papers[p]} clippings</span></button>`).join('')}</div>
         <div class="filters cf"><div class="seg">${[['all', 'All tones'], ['crit', 'Critical'], ['neu', 'Neutral'], ['sup', 'Supportive']].map(t => `<button class="${f.tone === t[0] ? 'on' : ''}" data-cf="tone=${t[0]}">${t[1]}</button>`).join('')}</div>${sel('topic', topics, f.topic, 'All topics')}${sel('person', people, f.person, 'Anyone')}${sel('sort', [['page', 'Page order'], ['crit', 'Most critical first'], ['pickup', 'Most reported first']], f.sort, 'Page order').replace('<option value="all">Page order</option>', '')}<input class="search" data-cfq placeholder="Search headlines, people, places" value="${U.esc(f.q)}"/></div>` })}
       ${card({ cls: 'span12', body: `<div class="tiles">${[['Clippings', st.n], ['Papers', Object.keys(st.pap).length], ['Critical', pct(st.crit, st.n) + '%'], ['Supportive', pct(st.sup, st.n) + '%'], ['Mention the CM', st.cm], ['Reported by 2+ outlets', st.picked]].map(z => `<div class="tile-s"><span>${z[0]}</span><b>${z[1]}</b></div>`).join('')}</div>` })}
       <div class="span8">${shown.length ? `<div class="clipgrid">${shown.map(card1).join('')}</div>${l.length > shown.length ? `<div class="more"><button class="btn ghost" data-cfmore>Show more (${l.length - shown.length} left)</button></div>` : ''}` : card({ title: 'Nothing matches', body: empty('No clipping matches these filters', 'Clear a filter to see more.') })}</div>
@@ -141,10 +142,11 @@
         <div class="chips">${(i.people || []).map(e => `<button class="chip on" data-cf="person=${U.esc(e)}" data-go="wall">${U.esc(e)}</button>`).join('')}${i.entities.filter(e => (i.people || []).indexOf(e) < 0).map(e => `<span class="chip ghost">${U.esc(e)}</span>`).join('')}</div>
         <div class="kvgrid">${kv.map(x => `<div><span>${x[0]}</span><b>${U.esc(x[1])}</b></div>`).join('')}</div>
         ${rel.length ? `<h5>Same story in other clippings</h5>${rel.slice(0, 5).map(x => `<div class="orow click" data-clip="${x.clipId}"><div><b>${U.esc(x.headline)}</b><p>${U.esc(pname(x.source))} · p.${x.clipPg} · ${dlabel(x.clipDate)}</p></div></div>`).join('')}` : ''}
-        <p class="mact">${i.issue && !i.generic ? `<button class="btn ghost" data-open-issue="${U.esc(i.issue)}">${I('clock', 16)} Issue history</button>` : ''} <button class="btn ghost" data-ask="What is said about ${U.esc((i.people || [])[0] || i.issue || 'this')}?">${I('chat', 16)} Ask</button></p>
+        <p class="mact"><button class="btn ghost" data-reader="${i.clipDate}" data-rdpage="${i.clipPg}">${I('news', 16)} Open in the day's file</button> ${i.issue && !i.generic ? `<button class="btn ghost" data-open-issue="${U.esc(i.issue)}">${I('clock', 16)} Issue history</button>` : ''} <button class="btn ghost" data-ask="What is said about ${U.esc((i.people || [])[0] || i.issue || 'this')}?">${I('chat', 16)} Ask</button></p>
         <div class="cnav">${prev ? `<button class="btn ghost sm" data-clip="${prev.clipId}">&lsaquo; Previous</button>` : '<span></span>'}<small class="muted">${k >= 0 ? (k + 1) + ' of ' + l.length : ''}</small>${next ? `<button class="btn ghost sm" data-clip="${next.clipId}">Next &rsaquo;</button>` : '<span></span>'}</div></div></div>`;
   };
 
+  CGP.clipUI = { badge, pname, dlabel };
   CGP.openClip = id => { const h = V.clip(id); if (h && CGP.openModal) CGP.openModal(h); };
 
   // events (delegated)
