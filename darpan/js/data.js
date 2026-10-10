@@ -5,6 +5,8 @@
   const D = (id, name, hi, tile, weight, note, kw, seats) => ({ id, name, hi, tile, weight, note, kw, seats });
   CGP.ref = {
     state: 'Chhattisgarh', cm: 'Vishnu Deo Sai',
+    // How far back the analysis reaches. Raise this (for example to 12) when a longer archive is wanted.
+    archiveMonths: 3,
     districts: [
       D('raipur', 'Raipur', 'रायपुर', [2, 2], 1.7, 'State capital', 'raipur|रायपुर|नवा रायपुर|naya raipur|atal nagar', ['Raipur City North', 'Raipur City South', 'Raipur City West', 'Raipur Rural', 'Abhanpur', 'Arang', 'Dharsiwa']),
       D('durg', 'Durg', 'दुर्ग', [1, 2], 1.3, 'Bhilai steel belt', 'durg|bhilai|दुर्ग|भिलाई|charoda|चरोदा', ['Durg City', 'Durg Rural', 'Bhilai Nagar', 'Vaishali Nagar', 'Ahiwara', 'Patan']),
@@ -217,7 +219,7 @@
     ],
 
     connectors: [
-      { name: 'Public news feeds', desc: 'Headlines, links and dates from news sites and portals, with a 12-month archive.', state: 'live' },
+      { name: 'Public news feeds', desc: 'Headlines, links and dates from news sites and portals, with a rolling 3-month archive.', state: 'live' },
       { name: 'YouTube channel feeds', desc: 'Latest videos with public view counts for followed channels.', state: 'live' },
       { name: 'Daily newspaper clippings', desc: 'The team\'s daily clippings, read and tagged like any other item, with the clipping linked.', state: 'live' },
       { name: 'Link library', desc: 'Paste article, post or video links with optional metrics; saved on this device and exportable.', state: 'live' },

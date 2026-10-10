@@ -14,6 +14,7 @@ from email.utils import parsedate_to_datetime
 
 
 USER_AGENT = "JanDarpanBot/1.0 (+https://github.com/ImDrCee/CGPro; research POC)"
+ARCHIVE_MONTHS = 3  # how far back a full collection reaches
 HOST_DELAY_SECONDS = 1.6
 REQUEST_TIMEOUT_SECONDS = 20
 MAX_RETRIES = 2
@@ -320,7 +321,7 @@ class Collector:
     def __init__(self):
         self.generated_at = None
         self.today = utc_now().date()
-        self.date_from = self.today - datetime.timedelta(days=365)
+        self.date_from = self.today - datetime.timedelta(days=ARCHIVE_MONTHS * 31)
         self.date_to = self.today
         self.items = []
         self.seen_titles = set()
@@ -606,7 +607,7 @@ class Collector:
         requests = []
         this_month = first_day_of_month(self.today)
         if self.google_window_mode == "after_before":
-            for offset in (range(1, -1, -1) if self.recent else range(12, 0, -1)):
+            for offset in (range(1, -1, -1) if self.recent else range(ARCHIVE_MONTHS, 0, -1)):
                 start = add_months(this_month, -offset)
                 end = add_months(start, 1)
                 requests.append(
