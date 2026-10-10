@@ -136,7 +136,7 @@
       const d = delta(s.n, prev.n);
       const topics = E.countBy(items, 'topic').slice(0, 6).map(x => {
         const ti = items.filter(i => i.topic === x.k), ts = E.stats(ti);
-        return { label: U.tname(x.k), value: x.n, right: x.n + ' · net ' + sgn(ts.net), color: netColor(ts.net), sub: ts.critical + ' critical · ' + ts.support + ' supportive' };
+        return { label: U.tname(x.k), value: x.n, right: x.n + ' · net ' + sgn(ts.net), color: netColor(ts.net), sub: ts.support + ' supportive · ' + ts.critical + ' critical' };
       });
       const ch = E.countBy(items, 'channel').map(x => ({ v: x.n, color: U.chColor(x.k), label: x.k }));
       const html = `<p class="lead">In ${T(p)}, the Chief Minister was mentioned in <b>${s.n}</b> items across <b>${ch.length}</b> channels. <b>${U.pct(s.support, s.n)}%</b> were supportive and <b>${U.pct(s.critical, s.n)}%</b> critical (net <b>${sgn(s.net)}</b>). Biggest themes: <b>${topics.slice(0, 3).map(t => t.label).join(', ')}</b>.</p>
@@ -237,7 +237,7 @@
       const d = R.districts.filter(x => x.id === p.district)[0], s = E.stats(scope);
       const con = E.concerns(scope, 4, p.range);
       const html = `<p class="lead"><b>${d.name}</b> (${d.note}) had <b>${s.n}</b> items${p.topics.length ? ' on <b>' + p.topics.map(U.tshort).join(' / ') + '</b>' : ''} in ${T(p)}, net <b>${sgn(s.net)}</b>. ${con.length ? 'Top concern: <b>' + U.esc(con[0].issue) + '</b>.' : ''}</p>
-        ${tiles([{ l: 'Items', v: s.n }, { l: 'Est. reach', v: (s.reach ? U.fmt(s.reach) : '—') }, { l: 'Critical', v: U.pct(s.critical, s.n) + '%' }, { l: 'Supportive', v: U.pct(s.support, s.n) + '%' }])}
+        ${tiles([{ l: 'Items', v: s.n }, { l: 'Est. reach', v: (s.reach ? U.fmt(s.reach) : '—') }, { l: 'Supportive', v: U.pct(s.support, s.n) + '%' }, { l: 'Critical', v: U.pct(s.critical, s.n) + '%' }])}
         ${section('Concerns raised', C.hbars(con.map(c => ({ label: U.esc(c.issue), value: c.score, right: c.n + ' items', color: 'var(--neg)', sub: U.tname(c.topic) }))))}
         ${section('Most amplified', E.top(scope, 3).map(C.postRow).join(''))}`;
       return { html, ev: E.top(scope, 5) };

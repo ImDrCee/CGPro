@@ -352,7 +352,7 @@ input[type=date][data-asof] { width: auto; }
 .more { text-align: center; margin-top: 18px; }
 .side { display: flex; flex-direction: column; gap: 20px; }
 .orow.click { cursor: pointer; } .orow.click:hover b { color: var(--pri); }
-.divbar { display: flex; height: 8px; border-radius: 99px; background: var(--bg); overflow: hidden; min-width: 110px; } .divbar i { display: block; height: 100%; } .divbar i.neg { background: var(--neg); } .divbar i.pos { background: var(--pos); margin-left: auto; }
+.divbar { display: flex; height: 8px; border-radius: 99px; background: var(--bg); overflow: hidden; min-width: 110px; } .divbar i { display: block; height: 100%; } .divbar i.pos { background: var(--pos); } .divbar i.neg { background: var(--neg); margin-left: auto; }
 .pn { display: inline-flex; align-items: center; gap: 3px; margin-right: 6px; font-size: 11px; } .pn .pbadge { width: 22px; height: 22px; font-size: 9px; border-radius: 7px; }
 .mcard.clipm { width: min(1100px, 96vw); display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 26px; align-items: start; }
 .clipm .cimgcol { position: sticky; top: 0; } .clipfull { display: block; background: var(--bg); border-radius: 18px; overflow: auto; max-height: 76vh; cursor: zoom-in; } .clipfull img { width: 100%; display: block; } .clipfull.big img { width: 190%; max-width: none; } .clipfull.big { cursor: zoom-out; }

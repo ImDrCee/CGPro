@@ -24,7 +24,7 @@
   };
   const topIssues = (items, k) => issueTone(items).sort((a, b) => b.n - a.n).slice(0, k);
   const outletTone = items => { const m = {}; items.forEach(i => { const o = m[i.source] || (m[i.source] = { k: i.source, n: 0, sup: 0, crit: 0 }); o.n++; if (i.stance > 0) o.sup++; else if (i.stance < 0) o.crit++; }); return Object.values(m).sort((a, b) => b.n - a.n); };
-  const bar = (crit, sup, n) => `<div class="divbar"><i class="neg" style="width:${pct(crit, n)}%"></i><i class="pos" style="width:${pct(sup, n)}%"></i></div>`;
+  const bar = (crit, sup, n) => `<div class="divbar"><i class="pos" style="width:${pct(sup, n)}%"></i><i class="neg" style="width:${pct(crit, n)}%"></i></div>`;
   const pillNet = v => `<span class="pill" style="--c:${v > 10 ? 'var(--pos)' : v < -10 ? 'var(--neg)' : 'var(--pri2)'}">${sgn(v)}</span>`;
   const thin = (p, who) => ({ html: `<p class="lead">There are too few items about <b>${esc(who)}</b> in ${p.label} to describe a trend (at least 5 are needed). Try a longer window, or add links in the Library.</p>` });
 

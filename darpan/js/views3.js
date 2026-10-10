@@ -32,7 +32,7 @@
         { n: 'note', l: 'Notes', t: 'textarea', w: 'full' }, { n: 'date', l: 'Published', t: 'date', v: dayStr(Date.now()) },
         { n: 'collection', l: 'Collection', ph: 'e.g. Daily analysis, Opposition, To rebut' }, { n: 'tags', l: 'Tags', ph: 'comma separated' },
         { n: 'speakerType', l: 'Speaker', t: 'select', o: [['media', 'Media'], ['opp', 'Opposition'], ['govt', 'Government'], ['bjp', 'BJP'], ['citizen', 'Citizen']], v: 'media' },
-        { n: 'stance', l: 'Stance toward government', t: 'select', o: [['', 'Auto-detect'], ['-1', 'Critical'], ['0', 'Neutral'], ['1', 'Supportive']] },
+        { n: 'stance', l: 'Stance toward government', t: 'select', o: [['', 'Auto-detect'], ['1', 'Supportive'], ['0', 'Neutral'], ['-1', 'Critical']] },
         { n: 'topic', l: 'Topic', t: 'select', o: topicOpts }, { n: 'district', l: 'District', t: 'select', o: distOpts },
         { n: 'likes', l: 'Likes', t: 'number' }, { n: 'shares', l: 'Shares / reposts', t: 'number' }, { n: 'comments', l: 'Comments', t: 'number' }, { n: 'views', l: 'Views', t: 'number' },
         { n: 'include', l: 'Analytics', t: 'check', cb: 'Include in dashboards and answers', v: true, w: 'full' }],
@@ -114,7 +114,7 @@
       const tid = S.packTopic || 'farmers', tp = R.topics.find(z => z.id === tid), items = E.scope(CGP.items, { range: E.range(30) }).filter(i => i.topic === tid), st = E.stats(items);
       const o = E.opposition(items, E.range(30)).slice(0, 3), stm = M.statements().filter(s => s.topic === tid).slice(0, 4), cm = M.commitments().filter(c => c.ids.some(id => (CGP.index[id] || {}).topic === tid)).slice(0, 3);
       body = `<div class="bento">${card({ cls: 'span12 pack', title: 'Debate prep pack: ' + tp.name, sub: 'Facts, claims and records for one topic, last 30 days', right: `<div class="filters"><select data-pack>${opts(R.topics.map(z => [z.id, z.name]), tid)}</select><button class="btn" onclick="window.print()">${I('print', 16)} Print</button></div>`,
-        body: `<div class="tiles">${[['Items', st.n], ['Critical', U.pct(st.critical, st.n) + '%'], ['Supportive', U.pct(st.support, st.n) + '%'], ['Reach', U.fmt(st.reach)]].map(z => `<div class="tile-s"><span>${z[0]}</span><b>${z[1]}</b></div>`).join('')}</div>
+        body: `<div class="tiles">${[['Items', st.n], ['Supportive', U.pct(st.support, st.n) + '%'], ['Critical', U.pct(st.critical, st.n) + '%'], ['Reach', U.fmt(st.reach)]].map(z => `<div class="tile-s"><span>${z[0]}</span><b>${z[1]}</b></div>`).join('')}</div>
           <h5>Lines the other side is using</h5>${o.length ? o.map(i => `<div class="orow"><div>${W.ilink(i.issue)}<p>${i.n} items · traction ${i.avgTraction}</p>${W.hist(i.issue)}</div></div>`).join('') : '<p class="muted">No opposition issue on this topic in the window.</p>'}
           <h5>Public record on the topic</h5>${stm.length ? stm.map(s => `<blockquote class="stq"><p>“${U.esc(s.quote)}”</p><cite>${U.esc(s.speaker)} · ${U.dstr(s.date)}${s.sample ? ' · fictional' : ''}</cite></blockquote>`).join('') : '<p class="muted">No statements stored for this topic.</p>'}
           <h5>Commitments touching it</h5>${cm.length ? cm.map(c => `<div class="orow"><div><b>${U.esc(c.text)}</b><p>${U.esc(c.who)} · ${c.deadline || 'no deadline'}</p></div>${pill(c.status, /Delivered/.test(c.status) ? 'pos' : /Delayed|rising/.test(c.status) ? 'neg' : 'neu')}</div>`).join('') : '<p class="muted">None linked.</p>'}
@@ -297,7 +297,7 @@
     return `<div class="bento">${card({ cls: 'span12', title: 'Review queue', sub: 'The tagger is rule-based and can be wrong. Confirm or correct low-confidence items; corrections are saved and override the auto tags everywhere.',
       right: `<span class="chip">${rev.length} reviewed · ${rev.length ? Math.round((100 * same) / rev.length) + '% auto-tags were right' : 'no accuracy yet'}</span>`,
       body: items.length ? items.map(i => `<div class="rvrow" data-rv-row="${i.id}"><div class="rvh"><a href="${U.esc(i.link)}" target="_blank" rel="noopener">${U.esc(i.headline)}</a><small>${U.esc(i.source)} · ${U.dstr(i.ts)} · confidence ${Math.round(i.conf * 100)}%</small></div>
-        <div class="rvc">${sel('topic', R.topics.map(t => [t.id, t.short]), i.topic)}${sel('district', [['', 'Other / none']].concat(R.districts.map(d => [d.id, d.name])), i.district)}${sel('stance', [['-1', 'Critical'], ['0', 'Neutral'], ['1', 'Supportive']], i.stance)}${sel('speakerType', Object.keys(R.speakers).map(k => [k, R.speakers[k].label]), i.speakerType)}<button class="btn sm" data-rv-save="${i.id}">${I('check', 14)} Confirm</button></div></div>`).join('') : empty('Nothing to review', 'All items are high-confidence or already reviewed.') })}</div>`;
+        <div class="rvc">${sel('topic', R.topics.map(t => [t.id, t.short]), i.topic)}${sel('district', [['', 'Other / none']].concat(R.districts.map(d => [d.id, d.name])), i.district)}${sel('stance', [['1', 'Supportive'], ['0', 'Neutral'], ['-1', 'Critical']], i.stance)}${sel('speakerType', Object.keys(R.speakers).map(k => [k, R.speakers[k].label]), i.speakerType)}<button class="btn sm" data-rv-save="${i.id}">${I('check', 14)} Confirm</button></div></div>`).join('') : empty('Nothing to review', 'All items are high-confidence or already reviewed.') })}</div>`;
   };
 
   V.lib_data = S => {
