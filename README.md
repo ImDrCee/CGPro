@@ -52,6 +52,18 @@ Python standard library only. It reads Google News RSS month by month for 12 mon
 
 Accounts you add with the **Track** button are saved in your browser only. To have the collector fetch them too, use *Download watch-list*, save the file as `data/watchlist.json`, run `python scripts/track.py`, then commit and push.
 
+### X, Facebook and Instagram
+
+These platforms do not allow scraping, so they are collected only through their official APIs. `python scripts/social.py` reads credentials from environment variables or a git-ignored `.env` file and writes `data/social.js`; the app then shows each platform as active.
+
+| Platform | Credential | Notes |
+|---|---|---|
+| X | `X_BEARER_TOKEN` | X API v2 recent search (last 7 days) for each followed handle; needs a paid plan that includes it |
+| Instagram | `IG_USER_ID`, `IG_TOKEN` | Instagram Graph API with your own Business or Creator account; reads public business and creator accounts via `business_discovery` |
+| Facebook | `FB_TOKEN` | Graph API with the Page Public Content Access feature (Meta app review) |
+
+Without a credential a platform is skipped and shows as needing API access; posts can still be added by link in the Library.
+
 ### Clippings screen
 
 The **Clippings** screen shows the team's daily newspaper clippings: filter by day, paper, tone, topic or person; open a clipping for its tags, metrics and neighbours; see who is covered and how each paper treats them. Every clipping is tagged by the same tagger as the rest of the data, so it counts in Pulse, People, Districts, Memory and the rest, and links back to its clipping.
@@ -87,6 +99,7 @@ darpan/js/qa.js           question parsing and answers (numbers are computed, ne
 darpan/js/views*.js       screens                darpan/js/app.js  state, events, import/export
 scripts/scrape.py         public-feed collector  data/live.js      collected headlines
 scripts/track.py          tracked-account updates  data/accounts.js
+scripts/social.py         X, Instagram, Facebook through official APIs  data/social.js
 scripts/ocr_clippings.py  plain OCR of the clipping PDFs (local only)
 scripts/build_clippings.py  headline, paper and page images from the PDFs (local only)
 scripts/tag_clippings.py  tags the clippings, writes data/clippings.js\nscripts/build_mlas.py     MLA roster builder      data/mlas.js  darpan/js/roster.js

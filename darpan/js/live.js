@@ -21,6 +21,7 @@
   const dev = s => { let d = 0, l = 0; for (const c of s) { if (/[\u0900-\u097F]/.test(c)) d++; if (/[A-Za-z\u0900-\u097F]/.test(c)) l++; } return l ? d / l : 0; };
 
   const L = (CGP.live = {});
+  CGP.socialOn = p => !!(g.CGP_SOCIAL && g.CGP_SOCIAL.meta && g.CGP_SOCIAL.meta.status && g.CGP_SOCIAL.meta.status[p] && g.CGP_SOCIAL.meta.status[p].connected);
   L.tok = t => String(t || '').toLowerCase().replace(/\s+[-–|]\s+[^-–|]{2,40}$/, '').replace(/[^\p{L}\p{N}\s]/gu, ' ').split(/\s+/).filter(w => w.length > 2);
   L.jac = (a, b) => { if (!a.length || !b.length) return 0; const A = new Set(a); let i = 0; const B = new Set(b); B.forEach(x => { if (A.has(x)) i++; }); return i / (A.size + B.size - i); };
 
@@ -140,6 +141,7 @@
     base.forEach(r => (have[r.id] = 1));
     const extra = [];
     ((g.CGP_ACCOUNTS && g.CGP_ACCOUNTS.accounts) || []).forEach(a => a.items.forEach(r => { if (!have[r.id]) { have[r.id] = 1; extra.push(r); } }));
+    ((g.CGP_SOCIAL && g.CGP_SOCIAL.items) || []).forEach(r => { if (!have[r.id]) { have[r.id] = 1; extra.push(r); } });
     const src = base.concat(extra);
     const clipItems = ((g.CGP_CLIPS && g.CGP_CLIPS.items) || []).map(c => Object.assign({}, c, { offState: false }));
     const all = src.map(r => L.tag(r)).concat(clipItems);

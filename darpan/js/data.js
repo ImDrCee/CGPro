@@ -222,8 +222,8 @@
       { name: 'Daily newspaper clippings', desc: 'The team\'s daily clippings, read and tagged like any other item, with the clipping linked.', state: 'live' },
       { name: 'Link library', desc: 'Paste article, post or video links with optional metrics; saved on this device and exportable.', state: 'live' },
       { name: 'File import', desc: 'Load items and context datasets from a file.', state: 'live' },
-      { name: 'X', desc: 'Followed handles and hashtags. Not connected; add posts by link for now.', state: 'key' },
-      { name: 'Facebook / Instagram', desc: 'Public pages. Not connected; add posts by link for now.', state: 'vendor' },
+      { name: 'X', desc: 'Recent posts from followed handles, through the official X API. Needs an API token; until then add posts by link.', state: 'key' },
+      { name: 'Facebook / Instagram', desc: 'Recent posts from public pages and accounts, through the official Meta APIs. Needs Meta access; until then add posts by link.', state: 'vendor' },
       { name: 'Model-based tagging', desc: 'Topic, stance, claim and district tagging by a language model, to replace the rule-based tagger.', state: 'next' }
     ],
 
