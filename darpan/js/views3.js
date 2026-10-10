@@ -292,8 +292,7 @@
     const st = { live: ['Live', 'pos'], next: ['Next', 'neu'], key: ['Needs API key', 'warn'], vendor: ['Needs vendor', 'warn'] };
     const vs = M.verdictStats();
     return `<div class="bento">
-      ${card({ cls: 'span5', title: 'Dataset in use', sub: 'Choose what feeds every screen', body: `<div class="seg wide">${[['live', 'Live headlines'], ['sample', 'Sample (24 mo)'], ['both', 'Both']].map(m => `<button class="${CGP.mode === m[0] ? 'on' : ''}" data-mode="${m[0]}">${m[1]}</button>`).join('')}</div>
-        <p class="muted sm">Live: real public headlines (auto-tagged). Sample: fictional, with 24 months of seasons, episodes and logged responses to demonstrate memory. Saved links always count.</p>
+      ${card({ cls: 'span5', title: 'Data in use', sub: 'Collected public headlines plus your saved links', body: `<p class="muted sm">Real public headlines, auto-tagged and unverified. Saved links always count.</p>
         <div class="tiles">${[['Items', U.fmt(CGP.items.length)], ['Live', U.fmt(L.liveItems().length)], ['Links', ST.links.all().length]].map(z => `<div class="tile-s"><span>${z[0]}</span><b>${z[1]}</b></div>`).join('')}</div>
         <div class="dz">${I('upload', 22)}<b>Import items (JSON)</b><p>Array or {"items":[…]}. Each record becomes a saved link, so the daily news analysis can be loaded here.</p><label class="btn">Choose file<input type="file" hidden accept=".json,application/json" data-import="items"/></label></div>
         <div class="dz">${I('users', 22)}<b>Import MLA roster (JSON)</b><p>[{"constituency":"Raipur City North","name":"…","party":"BJP"}]</p><label class="btn ghost">Choose file<input type="file" hidden accept=".json,application/json" data-import="mlas"/></label></div>

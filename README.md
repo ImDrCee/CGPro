@@ -57,7 +57,7 @@ Accounts you add with the **Track** button are saved in your browser only. To ha
 *People → Leaders & MLAs* lists all 90 seats with the sitting MLA, party, reservation, official district, 2023 votes, margin and runner-up, cabinet role, and Hindi names; click a row for a profile with maps, Wikipedia and ECI links and any coverage in the archive. `python scripts/build_mlas.py` rebuilds `data/mlas.js` from public Wikipedia pages (2023 results, the Raipur City South by-election of 2024, the Sai ministry). Check it against the Election Commission of India before external use; later by-elections, resignations and cabinet changes are not tracked automatically.
 ## Run locally
 
-Double-click `JanDarpan.html`, or `python -m http.server 8793` and open <http://127.0.0.1:8793/JanDarpan.html>. Useful URL options: `?mode=live|sample|both`, `?ask=<question>`, `?still` (no animations).
+Double-click `JanDarpan.html`, or `python -m http.server 8793` and open <http://127.0.0.1:8793/JanDarpan.html>. Useful URL options: `?ask=<question>`, `?still` (no animations).
 
 ## Layout
 

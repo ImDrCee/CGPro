@@ -39,7 +39,7 @@
 
     const hero = `<section class="card hero">
         <div class="blob b1"></div><div class="blob b2"></div>
-        <div class="hero-top"><div class="avatar lg">${initials(R.cm)}</div><div><span class="eyebrow">Chief Minister pulse · ${x.label}</span><h2>${R.cm}</h2></div></div>
+        <div class="hero-top"><div class="avatar lg">${initials(R.cm)}</div><div><span class="eyebrow">Chief Minister pulse · ${x.label}</span><h2>Honorable ${R.cm}</h2></div></div>
         <div class="hero-mid"><div class="big">${cu(cmS.n)}<small>items mention the CM</small>${dchip(cmS.n, cmP.n, x.prevOk)}</div><div class="hero-spark">${C.spark(ser.totals, { h: 74, color: '#fff' })}</div></div>
         <div class="hero-bot">
           <div><span>Supportive</span><b>${U.pct(cmS.support, cmS.n)}%</b></div>

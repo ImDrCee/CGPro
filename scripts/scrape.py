@@ -330,6 +330,7 @@ class Collector:
         self.trim_message = None
         self.google_window_mode = "after_before"
         self.google_window_note = None
+        self.recent = False
 
     def note(self, message):
         if message and message not in self.base_notes:
@@ -601,7 +602,7 @@ class Collector:
         requests = []
         this_month = first_day_of_month(self.today)
         if self.google_window_mode == "after_before":
-            for offset in range(12, 0, -1):
+            for offset in (range(1, -1, -1) if self.recent else range(12, 0, -1)):
                 start = add_months(this_month, -offset)
                 end = add_months(start, 1)
                 requests.append(
@@ -611,7 +612,7 @@ class Collector:
                     }
                 )
         else:
-            for days in range(360, 0, -30):
+            for days in ((30,) if self.recent else range(360, 0, -30)):
                 requests.append({"label": f"when:{days}d", "query": f"{query['text']} when:{days}d"})
         requests.append({"label": "when:7d", "query": f"{query['text']} when:7d"})
         return requests
@@ -1015,17 +1016,21 @@ class Collector:
 
 
 def main():
-    """Usage: python scripts/scrape.py [--resume] [--phases=google,youtube,rss]"""
+    """Usage: python scripts/scrape.py [--resume] [--recent] [--phases=google,youtube,rss]"""
     import sys
 
     phases = ("google", "youtube", "rss")
     resume = False
+    recent = False
     for arg in sys.argv[1:]:
         if arg == "--resume":
             resume = True
+        elif arg == "--recent":
+            recent = True
         elif arg.startswith("--phases="):
             phases = tuple(p.strip() for p in arg.split("=", 1)[1].split(",") if p.strip())
     collector = Collector()
+    collector.recent = recent
     try:
         if resume:
             collector.load_existing()

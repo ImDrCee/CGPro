@@ -7,7 +7,7 @@
   const NAV = [['pulse', 'Pulse', 'pulse'], ['ask', 'Ask', 'ask'], ['districts', 'Districts', 'map'], ['voices', 'Voices', 'opp'], ['social', 'Social', 'trend'], ['memory', 'Memory', 'clock'],
     ['promises', 'Promises', 'check'], ['patterns', 'Patterns', 'net'], ['people', 'People', 'users'], ['brief', 'Brief', 'doc'], ['library', 'Library', 'link']];
   const TITLES = {
-    pulse: ['CM Pulse', 'What is being said now, with what history behind it'], ask: ['Ask', 'Questions answered from the archive, with evidence'],
+    pulse: ['Jan Darpan', 'What is being said now, with what history behind it'], ask: ['Ask', 'Questions answered from the archive, with evidence'],
     districts: ['Districts', 'Concerns, sentiment and maps across the 10 districts'], voices: ['Voices', 'Attack lines, rebuttals, statements and prep packs'],
     social: ['Social', 'Traction, trends, amplification and official content'], memory: ['Memory', 'Issue history, recurrence, seasons, narratives and responses'],
     promises: ['Promises', 'Public commitments and what coverage says about delivery'], patterns: ['Patterns', 'Correlations across time, places, entities and sources'],
@@ -43,7 +43,6 @@
     const filters = S.view !== 'library';
     return `<div class="tb-l"><h1>${t[0]}</h1><p>${t[1]} · ${date}</p></div>
       <div class="tb-r">
-        <div class="seg" role="group" aria-label="Dataset">${[['live', 'Live'], ['sample', 'Sample'], ['both', 'Both']].map(m => `<button class="${CGP.mode === m[0] ? 'on' : ''}" data-mode="${m[0]}" data-tip="${m[0] === 'live' ? 'Real public headlines, auto-tagged' : m[0] === 'sample' ? 'Fictional 24-month demo data' : 'Both together'}">${m[1]}</button>`).join('')}</div>
         ${filters ? `<div class="seg" role="group" aria-label="Time window">${[[1, '24h'], [3, '3d'], [7, '7d'], [14, '14d'], [30, '30d'], [90, '90d'], [365, '1y']].map(d => `<button class="${S.days === d[0] ? 'on' : ''}" data-days="${d[0]}">${d[1]}</button>`).join('')}</div>
         <select class="sel" data-fd aria-label="District"><option value="all">All 10 districts</option>${R.districts.map(d => `<option value="${d.id}" ${S.district === d.id ? 'selected' : ''}>${d.name}</option>`).join('')}</select>
         <select class="sel" data-fc aria-label="Channel"><option value="all">All channels</option>${R.channels.map(c => `<option ${S.channel === c.id ? 'selected' : ''}>${c.id}</option>`).join('')}</select>` : ''}
@@ -250,8 +249,7 @@
   CGP.mlas = CGP.mlas || {};
   CGP.makeSamples();
   const hasLive = !!(g.CGP_LIVE && g.CGP_LIVE.items && g.CGP_LIVE.items.length);
-  const qm = (location.search.match(/[?&]mode=(live|sample|both)/) || [])[1];
-  CGP.setMode(qm || (hasLive ? (set.all().mode || 'live') : 'sample'));
+  CGP.setMode(hasLive ? 'live' : 'sample');
   function boot() {
     if (boot.done) return; boot.done = true;
     new URLSearchParams(location.search).getAll('ask').forEach(q => { const r = CGP.Q.answer(q, S); S.chat.push({ role: 'user', text: q }, { role: 'ai', html: r.html, p: r.p }); S.view = 'ask'; });
