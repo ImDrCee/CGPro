@@ -73,7 +73,7 @@ python scripts/build_clippings.py    # OCR the PDFs in pulse_data/, save page im
 python scripts/tag_clippings.py      # tag them with the app's tagger, write data/clippings.js (headline + tags only)
 ```
 
-The PDFs and OCR text never leave `pulse_data/` (git-ignored). The public data file keeps only the headline and the computed tags. The page images are newspaper pages, so they are **not** in this public repository. They live in a separate private repository, `ImDrCee/CGPro-clips` (folders `YYYY-MM-DD/NNN.jpg`, created from `pulse_data/clips/`). In the app, **Connect clippings library** takes a read-only fine-grained GitHub token for that repository (Contents: Read-only); the token is kept on that device only and pages are fetched with it, so only people with access to the private repository can read them. A local-folder option remains for offline use. To add days: run the two build scripts, then commit and push `pulse_data/clips/` to the private repository.
+The PDFs, page images and OCR text never leave `pulse_data/` (git-ignored). The public data file keeps only the headline and the computed tags. To see page images in the app, use **Link clipping images** and choose `pulse_data/clips/`; the folder is read in the browser and nothing is uploaded.
 
 ### Sources taken from the team's daily clippings
 

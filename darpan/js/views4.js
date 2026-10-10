@@ -42,9 +42,9 @@
 
   const linkBar = () => {
     const ci = CGP.clipImg;
-    if (ci.status === 'ready') return `<span class="chip on">${I('check', 13)} ${ci.source === 'github' ? 'Clippings library connected' : ci.count + ' images linked'}</span> <button class="btn ghost sm" data-clipconnect>Manage</button>`;
+    if (ci.status === 'ready') return `<span class="chip on">${I('check', 13)} ${ci.count} clipping images linked</span> <button class="btn ghost sm" data-clipfolder>Change folder</button>`;
     if (ci.status === 'permission') return `<button class="btn sm" data-clipreconnect>${I('link', 14)} Reconnect clipping images</button>`;
-    return `<button class="btn sm" data-clipconnect>${I('link', 14)} ${ci.status === 'denied' ? 'Reconnect clippings library' : 'Connect clippings library'}</button>`;
+    return `<button class="btn sm" data-clipfolder>${I('link', 14)} Link clipping images</button>`;
   };
 
   const wday = d => new Date(d + 'T12:00:00').toLocaleDateString('en-IN', { weekday: 'short' });
@@ -144,7 +144,7 @@
     const kv = [['Paper', pname(i.source)], ['Edition', i.clipEd || '—'], ['Date', dlabel(i.clipDate) + ' 2026'], ['Page in the file', i.clipPg], ['Topic', U.tname(i.topic)], ['Issue', i.issue || '—'], ['District', i.place || '—'], ['Constituency', i.constituency || '—'],
       ['Speaker type', R.speakers[i.speakerType] ? R.speakers[i.speakerType].label : i.speakerType], ['Tone', i.stance > 0 ? 'Supportive' : i.stance < 0 ? 'Critical' : 'Neutral'], ['Sentiment', (i.sentiment > 0 ? '+' : '') + i.sentiment], ['Reported by', i.pickup + (i.pickup > 1 ? ' outlets' : ' outlet')], ['Tag confidence', Math.round((i.conf || 0) * 100) + '%']];
     const ci = CGP.clipImg;
-    const imgSide = ci.status === 'ready' ? `<a class="clipfull" data-clipimg="${imgPath(i)}" href="#" data-zoom><span class="ph">${I('doc', 22)}</span></a>` : `<div class="clipnoimg">${I('doc', 28)}<b>${ci.status === 'denied' ? 'Access to the clippings library was refused' : 'Connect the clippings library to see the page'}</b><p>The scanned pages are kept in a private library, not on the website.</p>${ci.status === 'permission' ? `<button class="btn" data-clipreconnect>Reconnect clipping images</button>` : `<button class="btn" data-clipconnect>Connect clippings library</button>`}</div>`;
+    const imgSide = ci.status === 'ready' ? `<a class="clipfull" data-clipimg="${imgPath(i)}" href="#" data-zoom><span class="ph">${I('doc', 22)}</span></a>` : `<div class="clipnoimg">${I('doc', 28)}<b>Clipping image not linked</b><p>The scanned page stays on the team's own devices. Link the clippings folder to see it here.</p>${ci.status === 'permission' ? `<button class="btn" data-clipreconnect>Reconnect clipping images</button>` : `<button class="btn" data-clipfolder>Link clipping images</button>`}</div>`;
     return `<div class="mcard clipm"><button class="mclose" data-close aria-label="Close">${I('close', 18)}</button>
       <div class="cimgcol">${imgSide}</div>
       <div class="cinfo"><div class="mhead">${badge(i.source)}<span>${U.esc(pname(i.source))} · page ${i.clipPg} · ${dlabel(i.clipDate)}</span>${C.stanceTag(i.stance)}</div>
