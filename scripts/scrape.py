@@ -47,6 +47,8 @@ PRINT_BRAND_HINTS = [
     "deshbandhu",
     "देशबंधु",
     "navbharat",
+    "navabharat",
+    "swadesh",
     "नवभारत",
     "dainik chhattisgarh",
     "amar ujala",
@@ -197,6 +199,8 @@ OUTLETS = [
     {"slug": "deshbandhu", "name": "Deshbandhu", "home": "https://www.deshbandhu.co.in", "cg_specific": False},
     {"slug": "naidunia", "name": "Nai Dunia", "home": "https://www.naidunia.com", "cg_specific": False},
     {"slug": "thehitavada", "name": "The Hitavada", "home": "https://www.thehitavada.com", "cg_specific": False},
+    {"slug": "navabharat", "name": "Navbharat (Chhattisgarh)", "home": "https://www.navabharat.news", "cg_specific": False},
+    {"slug": "swadesh", "name": "Swadesh", "home": "https://www.swadeshnews.in", "cg_specific": False},
     {"slug": "dainikchhattisgarh", "name": "Dainik Chhattisgarh", "home": "https://www.dainikchhattisgarh.com", "cg_specific": True},
     {"slug": "khabar36", "name": "Khabar36", "home": "https://khabar36.com", "cg_specific": True},
     {"slug": "livehindustan", "name": "Live Hindustan", "home": "https://www.livehindustan.com", "cg_specific": False},
@@ -747,11 +751,14 @@ class Collector:
             )
             if error or not text:
                 continue
-            match = YOUTUBE_ID_RE.search(text)
-            if not match:
+            # A channel page also lists related channels, so the first "channelId" is often the wrong one.
+            # The canonical link and externalId always belong to the page's own channel.
+            found = (re.search(r'<link rel="canonical" href="https://www.youtube.com/channel/(UC[\w-]{22})"', text)
+                     or re.search(r'"externalId":"(UC[\w-]{22})"', text)
+                     or re.search(r'<meta itemprop="(?:identifier|channelId)" content="(UC[\w-]{22})"', text))
+            if not found:
                 continue
-            channel_id = next(group for group in match.groups() if group)
-            return channel_id
+            return found.group(1)
         self.set_source_error(source_key, channel["label"], "youtube", "channel id not resolved")
         return None
 

@@ -334,3 +334,4 @@ input[type=date][data-asof] { width: auto; }
 .party.GGP { background: #E3F5E6; color: #2E8B3E; } [data-theme='dark'] .party.GGP { background: #143321; }
 .mla-tbl td.role { max-width: 190px; font-size: 12px; } .mla-tbl { min-width: 880px; } .card .mla-tbl-wrap { overflow-x: auto; }
 .mcard .kvgrid { margin: 14px 0; }
+.cbar { flex: 1; height: 8px; border-radius: 99px; background: var(--bg); min-width: 80px; margin: 0 10px; overflow: hidden; } .cbar i { display: block; height: 100%; width: var(--w); background: linear-gradient(90deg, var(--pri), var(--pri2)); border-radius: 99px; }

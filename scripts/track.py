@@ -175,10 +175,11 @@ class Tracker(S.Collector):
                     notes.append({"type": "youtube", "ok": False, "note": str(exc)})
                     continue
                 n = 0
+                recent = sum(1 for e in entries if self.keep(e["published_dt"]))
                 for e in entries:
                     if self.keep(e["published_dt"]) and (ent["name"] in CG_SPECIFIC or ent["group"] == "govt" or S.CG_RELEVANT_RE.search(e["title"] or "")):
                         add(self.item(ent, e["title"], e["link"], cname or ent["name"], "YouTube", "acct_yt", e["published_dt"], "yt", e.get("views"))); n += 1
-                notes.append({"type": "youtube", "ok": True, "note": f"{n} videos in the last {self.days} days"})
+                notes.append({"type": "youtube", "ok": True, "note": f"{n} Chhattisgarh-relevant of {recent} videos in the last {self.days} days"})
             elif h["platform"] in ("X", "Facebook", "Instagram"):
                 handle = h["handle"]
                 bare = handle.lstrip("@")

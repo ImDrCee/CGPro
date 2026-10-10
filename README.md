@@ -52,6 +52,10 @@ Python standard library only. It reads Google News RSS month by month for 12 mon
 
 Accounts you add with the **Track** button are saved in your browser only. To have the collector fetch them too, use *Download watch-list*, save the file as `data/watchlist.json`, run `python scripts/track.py`, then commit and push.
 
+### Sources taken from the team's daily clippings
+
+The team compiles a daily newspaper-clipping PDF by hand (scanned images, one clipping per page). `python scripts/ocr_clippings.py` reads them with Tesseract (Hindi + English) into `pulse_data/ocr/`, so the papers, editions and topics that matter can be counted. The PDFs and the OCR text are git-ignored and never published; only aggregate counts live in `darpan/js/data.js` (`clipStats`, and `clip` on each paper). *Library ? Tracked accounts* shows these papers first and follows them by default on first load.
+
 ## The MLA roster
 
 *People → Leaders & MLAs* lists all 90 seats with the sitting MLA, party, reservation, official district, 2023 votes, margin and runner-up, cabinet role, and Hindi names; click a row for a profile with maps, Wikipedia and ECI links and any coverage in the archive. `python scripts/build_mlas.py` rebuilds `data/mlas.js` from public Wikipedia pages (2023 results, the Raipur City South by-election of 2024, the Sai ministry). Check it against the Election Commission of India before external use; later by-elections, resignations and cabinet changes are not tracked automatically.
@@ -71,7 +75,8 @@ darpan/js/store.js        persistence (links, watch-list, ledger, corrections, v
 darpan/js/qa.js           question parsing and answers (numbers are computed, never generated)
 darpan/js/views*.js       screens                darpan/js/app.js  state, events, import/export
 scripts/scrape.py         public-feed collector  data/live.js      collected headlines
-scripts/track.py          tracked-account updates  data/accounts.js\nscripts/build_mlas.py     MLA roster builder      data/mlas.js  darpan/js/roster.js
+scripts/track.py          tracked-account updates  data/accounts.js
+scripts/ocr_clippings.py  OCR of the daily clipping PDFs (local only)\nscripts/build_mlas.py     MLA roster builder      data/mlas.js  darpan/js/roster.js
 PRO.html + js/ + css/     Jan Pulse (v1)
 ```
 
