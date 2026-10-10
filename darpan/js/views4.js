@@ -14,11 +14,11 @@
 
   const clips = () => (CGP.items || []).filter(i => i.clipId);
   CGP.clipCount = () => clips().length;
-  const F = S => (S.cf = S.cf || { day: 'all', paper: 'all', tone: 'all', topic: 'all', person: 'all', q: '', sort: 'page', n: 48 });
+  const F = S => (S.cf = S.cf || { day: 'all', month: 'all', paper: 'all', tone: 'all', topic: 'all', person: 'all', q: '', sort: 'page', n: 48 });
 
   function filtered(S, skip) {
     const f = F(S), q = (f.q || '').trim().toLowerCase();
-    let l = clips().filter(i => (skip === 'day' || f.day === 'all' || i.clipDate === f.day)
+    let l = clips().filter(i => (f.month === 'all' || i.clipDate.slice(5, 7) === f.month) && (skip === 'day' || f.day === 'all' || i.clipDate === f.day)
       && (skip === 'paper' || f.paper === 'all' || i.source === f.paper)
       && (skip === 'base' || f.tone === 'all' || (f.tone === 'crit' ? i.stance < 0 : f.tone === 'sup' ? i.stance > 0 : i.stance === 0))
       && (skip === 'base' || f.topic === 'all' || i.topic === f.topic)
@@ -42,17 +42,26 @@
 
   const linkBar = () => {
     const ci = CGP.clipImg;
-    if (ci.status === 'ready') return `<span class="chip on">${I('check', 13)} ${ci.count} clipping images linked</span> <button class="btn ghost sm" data-clipfolder>Change folder</button>`;
+    if (ci.status === 'ready') return `<span class="chip on">${I('check', 13)} ${ci.source === 'github' ? 'Clippings library connected' : ci.count + ' images linked'}</span> <button class="btn ghost sm" data-clipconnect>Manage</button>`;
     if (ci.status === 'permission') return `<button class="btn sm" data-clipreconnect>${I('link', 14)} Reconnect clipping images</button>`;
-    return `<button class="btn sm" data-clipfolder>${I('link', 14)} Link clipping images</button>`;
+    return `<button class="btn sm" data-clipconnect>${I('link', 14)} ${ci.status === 'denied' ? 'Reconnect clippings library' : 'Connect clippings library'}</button>`;
   };
 
   const wday = d => new Date(d + 'T12:00:00').toLocaleDateString('en-IN', { weekday: 'short' });
+  const MFULL = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  function monthBar(S) {
+    const f = F(S), all = clips(), m = {};
+    all.forEach(i => { const k = i.clipDate.slice(5, 7); const o = m[k] || (m[k] = { n: 0, d: {} }); o.n++; o.d[i.clipDate] = 1; });
+    const keys = Object.keys(m).sort().reverse();
+    return `<div class="monthbar"><button class="mtile ${f.month === 'all' ? 'on' : ''}" data-cf="month=all"><b>All</b><span>${all.length} clippings</span></button>${keys.map(k => `<button class="mtile ${f.month === k ? 'on' : ''}" data-cf="month=${k}"><b>${MFULL[+k - 1]}</b><span>${m[k].n} clippings · ${Object.keys(m[k].d).length} days</span></button>`).join('')}</div>`;
+  }
   function dayRail(S) {
     const f = F(S), all = clips(), days = {};
     all.forEach(i => (days[i.clipDate] = (days[i.clipDate] || 0) + 1));
     const ds = Object.keys(days).sort().reverse(), max = Math.max.apply(null, ds.map(d => days[d]).concat([1]));
-    return `<div class="daygrid"><button class="daytile all ${f.day === 'all' ? 'on' : ''}" data-cf="day=all"><span class="dw">All</span><b class="dd">${ds.length}</b><span class="dm">days</span><em>${all.length} clippings</em></button>${ds.map(d => { const p = d.split('-'); return `<button class="daytile ${f.day === d ? 'on' : ''}" data-cf="day=${d}" data-tip="${days[d]} clippings on ${dlabel(d)}"><span class="dw">${wday(d)}</span><b class="dd">${+p[2]}</b><span class="dm">${MON[+p[1] - 1]}</span><em>${days[d]} clippings</em><i style="width:${Math.round(100 * days[d] / max)}%"></i></button>`; }).join('')}</div>`;
+    const groups = [...new Set(ds.map(d => d.slice(5, 7)))].filter(k => f.month === 'all' || f.month === k);
+    const tile = d => { const p = d.split('-'); return `<button class="daytile ${f.day === d ? 'on' : ''}" data-cf="day=${f.day === d ? 'all' : d}" data-tip="${days[d]} clippings on ${dlabel(d)}"><span class="dw">${wday(d)}</span><b class="dd">${+p[2]}</b><span class="dm">${MON[+p[1] - 1]}</span><em>${days[d]} clippings</em><i style="width:${Math.round(100 * days[d] / max)}%"></i></button>`; };
+    return monthBar(S) + groups.map(k => `${f.month === 'all' ? `<h5 class="mhead">${MFULL[+k - 1]} 2026</h5>` : ''}<div class="daygrid">${ds.filter(d => d.slice(5, 7) === k).map(tile).join('')}</div>`).join('');
   }
 
   function card1(i) {
@@ -65,6 +74,7 @@
       <small class="muted">${dlabel(i.clipDate)}</small></article>`;
   }
 
+  const rdDay = (f, all) => f.day !== 'all' ? f.day : [...new Set(all.filter(i => f.month === 'all' || i.clipDate.slice(5, 7) === f.month).map(i => i.clipDate))].sort().reverse()[0];
   function wall(S) {
     const f = F(S), l = filtered(S), st = stats(l), all = clips();
     if (!all.length) return `<div class="bento">${card({ cls: 'span12', title: 'Clippings', body: empty('No clippings loaded', 'The daily clippings have not been added yet.') })}</div>`;
@@ -76,7 +86,7 @@
     const shown = l.slice(0, f.n);
     const maxIss = st.iss.length ? st.iss[0][1] : 1;
     return `<div class="bento">
-      ${card({ cls: 'span12', title: f.day === 'all' ? 'All clippings' : 'Clippings of ' + dlabel(f.day), sub: 'Read from the team\'s daily newspaper clippings. Every clipping is tagged like any other item and counts in the analysis.', right: `<div class="row-btns"><button class="btn" data-reader="${f.day === 'all' ? [...new Set(all.map(i => i.clipDate))].sort().reverse()[0] : f.day}">${I('news', 16)} Read the ${dlabel(f.day === 'all' ? [...new Set(all.map(i => i.clipDate))].sort().reverse()[0] : f.day)} file</button>${linkBar()}</div>`,
+      ${card({ cls: 'span12', title: f.day !== 'all' ? 'Clippings of ' + dlabel(f.day) : f.month !== 'all' ? MFULL[+f.month - 1] + ' clippings' : 'All clippings', sub: 'Read from the team\'s daily newspaper clippings. Every clipping is tagged like any other item and counts in the analysis.', right: `<div class="row-btns"><button class="btn" data-reader="${rdDay(f, all)}">${I('news', 16)} Read the ${dlabel(rdDay(f, all))} file</button>${linkBar()}</div>`,
         body: `${dayRail(S)}
         <div class="filters cf">${`<button class="chip ${f.paper === 'all' ? 'on' : ''}" data-cf="paper=all">All papers</button>`}${pl.map(p => `<button class="chip ${f.paper === p ? 'on' : ''}" data-cf="paper=${U.esc(p)}">${badge(p)} ${U.esc(pname(p))} <span class="cnt">${papers[p]} clippings</span></button>`).join('')}</div>
         <div class="filters cf"><div class="seg">${[['all', 'All tones'], ['crit', 'Critical'], ['neu', 'Neutral'], ['sup', 'Supportive']].map(t => `<button class="${f.tone === t[0] ? 'on' : ''}" data-cf="tone=${t[0]}">${t[1]}</button>`).join('')}</div>${sel('topic', topics, f.topic, 'All topics')}${sel('person', people, f.person, 'Anyone')}${sel('sort', [['page', 'Page order'], ['crit', 'Most critical first'], ['pickup', 'Most reported first']], f.sort, 'Page order').replace('<option value="all">Page order</option>', '')}<input class="search" data-cfq placeholder="Search headlines, people, places" value="${U.esc(f.q)}"/></div>` })}
@@ -134,7 +144,7 @@
     const kv = [['Paper', pname(i.source)], ['Edition', i.clipEd || '—'], ['Date', dlabel(i.clipDate) + ' 2026'], ['Page in the file', i.clipPg], ['Topic', U.tname(i.topic)], ['Issue', i.issue || '—'], ['District', i.place || '—'], ['Constituency', i.constituency || '—'],
       ['Speaker type', R.speakers[i.speakerType] ? R.speakers[i.speakerType].label : i.speakerType], ['Tone', i.stance > 0 ? 'Supportive' : i.stance < 0 ? 'Critical' : 'Neutral'], ['Sentiment', (i.sentiment > 0 ? '+' : '') + i.sentiment], ['Reported by', i.pickup + (i.pickup > 1 ? ' outlets' : ' outlet')], ['Tag confidence', Math.round((i.conf || 0) * 100) + '%']];
     const ci = CGP.clipImg;
-    const imgSide = ci.status === 'ready' ? `<a class="clipfull" data-clipimg="${imgPath(i)}" href="#" data-zoom><span class="ph">${I('doc', 22)}</span></a>` : `<div class="clipnoimg">${I('doc', 28)}<b>Clipping image not linked</b><p>The scanned page stays on the team's own devices. Link the clippings folder to see it here.</p>${ci.status === 'permission' ? `<button class="btn" data-clipreconnect>Reconnect clipping images</button>` : `<button class="btn" data-clipfolder>Link clipping images</button>`}</div>`;
+    const imgSide = ci.status === 'ready' ? `<a class="clipfull" data-clipimg="${imgPath(i)}" href="#" data-zoom><span class="ph">${I('doc', 22)}</span></a>` : `<div class="clipnoimg">${I('doc', 28)}<b>${ci.status === 'denied' ? 'Access to the clippings library was refused' : 'Connect the clippings library to see the page'}</b><p>The scanned pages are kept in a private library, not on the website.</p>${ci.status === 'permission' ? `<button class="btn" data-clipreconnect>Reconnect clipping images</button>` : `<button class="btn" data-clipconnect>Connect clippings library</button>`}</div>`;
     return `<div class="mcard clipm"><button class="mclose" data-close aria-label="Close">${I('close', 18)}</button>
       <div class="cimgcol">${imgSide}</div>
       <div class="cinfo"><div class="mhead">${badge(i.source)}<span>${U.esc(pname(i.source))} · page ${i.clipPg} · ${dlabel(i.clipDate)}</span>${C.stanceTag(i.stance)}</div>
@@ -161,7 +171,7 @@
       if (t.hasAttribute('data-clipreconnect')) { e.preventDefault(); CGP.clipImg.reconnect().then(ok => { if (ok) { CGP.toast('Clipping images linked'); CGP.render({ keepScroll: true, noFocus: true }); } }); return; }
       if (t.hasAttribute('data-cfmore')) { F(S).n += 48; CGP.render({ keepScroll: true, noFocus: true }); return; }
       if (t.hasAttribute('data-cf')) {
-        e.preventDefault(); const kv = t.getAttribute('data-cf').split('='), f = F(S); f[kv[0]] = kv.slice(1).join('='); f.n = 48;
+        e.preventDefault(); const kv = t.getAttribute('data-cf').split('='), f = F(S); f[kv[0]] = kv.slice(1).join('='); f.n = 48; if (kv[0] === 'month') f.day = 'all';
         if (t.hasAttribute('data-go')) { S.tab.clippings = 'wall'; if (CGP.closeModal) CGP.closeModal(); if (S.view !== 'clippings') { S.view = 'clippings'; } history.replaceState(null, '', '#clippings'); }
         CGP.render({ keepScroll: !t.hasAttribute('data-go'), noFocus: true }); return;
       }

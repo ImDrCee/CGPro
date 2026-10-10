@@ -9,7 +9,7 @@
     const ci = CGP.clipImg, its = clips(d), byPg = {};
     its.forEach(i => (byPg[i.clipPg] = i));
     let list = [{ pg: 0, item: null }].concat(its.map(i => ({ pg: i.clipPg, item: i })));
-    if (ci.status === 'ready') list = list.filter(p => ci.files[imgPath(d, p.pg)]);
+    if (ci.status === 'ready' && ci.source === 'folder') list = list.filter(p => ci.files[imgPath(d, p.pg)]);
     return list;
   }
 
@@ -21,7 +21,7 @@
     const rows = list.map((p, k) => `<button class="rdrow ${k === idx ? 'on' : ''}" data-rdidx="${k}">${p.item ? ui.badge(p.item.source) : '<span class="pbadge" style="--c:#8a8fa3">·</span>'}<span><b>p.${p.pg}</b> ${p.item ? U.esc(p.item.headline || ui.pname(p.item.source)) : 'Cover'}</span></button>`).join('');
     const main = ci.status === 'ready'
       ? `<a class="clipfull rdimg" href="#" data-zoom data-clipimg="${imgPath(d, cur.pg)}"><span class="ph">${I('doc', 22)}</span></a>`
-      : `<div class="clipnoimg">${I('doc', 28)}<b>Clipping images are not linked</b><p>The scanned pages stay on the team's own devices. Link the clippings folder to read the file here.</p>${ci.status === 'permission' ? '<button class="btn" data-clipreconnect>Reconnect clipping images</button>' : '<button class="btn" data-clipfolder>Link clipping images</button>'}</div>`;
+      : `<div class="clipnoimg">${I('doc', 28)}<b>${ci.status === 'denied' ? 'Access to the clippings library was refused' : 'Connect the clippings library to read the file'}</b><p>The scanned pages are kept in a private library, not on the website.</p>${ci.status === 'permission' ? '<button class="btn" data-clipreconnect>Reconnect clipping images</button>' : '<button class="btn" data-clipconnect>Connect clippings library</button>'}</div>`;
     const html = `<div class="mcard reader"><button class="mclose" data-close aria-label="Close">${I('close', 18)}</button>
       <header class="rdh"><div><h3>${ui.dlabel(d)} 2026 · daily clippings</h3><p class="muted">${cur.pg === 0 ? 'Cover' : 'Page ' + cur.pg + (it ? ' · ' + U.esc(ui.pname(it.source)) : '')} · ${idx + 1} of ${list.length}</p></div>
         <div class="rdnav"><button class="btn ghost sm" data-rdgo="-1" ${idx ? '' : 'disabled'}>&lsaquo; Previous</button><input type="number" min="1" max="${list.length}" value="${idx + 1}" data-rdjump aria-label="Go to page"/><button class="btn ghost sm" data-rdgo="1" ${idx < list.length - 1 ? '' : 'disabled'}>Next &rsaquo;</button><button class="btn ghost sm" data-rdzoomall>Zoom</button></div></header>
@@ -40,6 +40,7 @@
   ci.reconnect = async () => { const ok = await reconnect(); if (ok) reopen(); return ok; };
   ci.linkFiles = f => { linkFiles(f); reopen(); };
 
+  document.addEventListener('clipimg-change', reopen);
   document.addEventListener('click', e => {
     const t = e.target.closest && e.target.closest('[data-reader],[data-rdidx],[data-rdgo],[data-rdzoomall]'); if (!t) return;
     e.preventDefault(); e.stopPropagation();

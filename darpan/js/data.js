@@ -166,7 +166,7 @@
 
     mediaCatalog: [
       { name: 'Hari Bhoomi', type: 'Newspaper', lang: 'Hindi', tier: 1, air: 9.66, site: 'haribhoomi.com', x: 'haribhoomicom', fb: 'Haribhoomi', ig: '', yt: '@haribhoomitv', clip: { pages: 370, ed: 'Raipur, Jagdalpur and New Delhi desks', url: 'epaper.haribhoomi.com' }, match: 'haribhoomi|हरिभूमि' },
-      { name: 'Dainik Bhaskar', type: 'Newspaper', lang: 'Hindi', tier: 1, air: 7.87, site: 'bhaskar.com', x: 'dainikbhaskar', fb: 'dainikbhaskar', ig: '', yt: 'channel/UCVZ57OkKPAuRJ_wA_Rt4XFg', clip: { pages: 150, ed: 'Raipur, Bastar Bhaskar' }, match: 'bhaskar|भास्कर' },
+      { name: 'Dainik Bhaskar', type: 'Newspaper', lang: 'Hindi', tier: 1, air: 7.87, site: 'bhaskar.com', x: 'dainikbhaskar', fb: 'dainikbhaskar', ig: '', yt: 'channel/UCVZ57OkKPAuRJ_wA_Rt4XFg', clip: { pages: 149, ed: 'Raipur, Bastar Bhaskar' }, match: 'bhaskar|भास्कर' },
       { name: 'Navbharat (Chhattisgarh)', type: 'Newspaper', lang: 'Hindi', tier: 1, air: 6.69, site: 'navabharat.news', x: '', fb: '', ig: '', yt: '', clip: { pages: 398, ed: 'Raipur Main, Rajdhani, Nyaydhani', url: 'epaper.navabharat.news' }, match: 'navbharat|नवभारत|nava bharat' },
       { name: 'Patrika', type: 'Newspaper', lang: 'Hindi', tier: 2, air: 4.21, site: 'patrika.com', x: 'PatrikaNews', fb: 'patrikahindinews', ig: 'rajasthan_patrika', yt: '@RajasthanPatrikaTV', clip: { pages: 159, ed: 'Chhattisgarh edition', url: 'patrika.com' }, match: 'patrika|पत्रिका' },
       { name: 'Nai Dunia', type: 'Newspaper', lang: 'Hindi', tier: 2, air: 2.54, site: 'naidunia.com', x: 'Nai_Dunia', fb: 'NaiDunia', ig: '', yt: '@NaiDunia-NavDunia', clip: { pages: 208, ed: 'Raipur, state bureau' }, match: 'nai ?dunia|नईदुनिया|नई दुनिया' },
@@ -190,7 +190,7 @@
     ],
     // Aggregates from the team's manually compiled daily newspaper clippings (OCR keyword counts; approximate, no clipping text kept).
     clipStats: {
-      issues: 16, clippings: 1286, from: '2026-09-23', to: '2026-10-08',
+      issues: 16, clippings: 1285, from: '2026-09-23', to: '2026-10-08',
       note: 'Scanned clippings were read with OCR. Topic shares are keyword matches, so they overlap and are approximate.',
       topics: [['CM and government', 28], ['BJP organisation', 26], ['PM Modi and the Centre', 24], ['Law and order, crime', 22], ['Congress and opposition', 20], ['Education and schools', 19], ['Health', 16], ['Mahtari Vandan, women', 15], ['Naxal, Bastar', 14], ['Jobs, recruitment', 14], ['Roads, rail, infrastructure', 13], ['SIR, voter list, election commission', 12], ['Industry, investment', 10], ['Farmers, paddy, fertiliser', 9], ['Municipal and panchayat elections', 7], ['Tribal affairs, reservation', 6], ['Power, electricity', 6], ['Coal, mining, Hasdeo', 4], ['Scams and agencies', 4], ['Drugs', 4]],
       places: [['Raipur', 691], ['New Delhi', 240], ['Bastar', 161], ['Bilaspur', 122], ['Durg', 107], ['Bhilai', 68], ['Jagdalpur', 63], ['Dhamtari', 48], ['Surguja', 46], ['Rajnandgaon', 43], ['Korba', 40], ['Kanker', 35], ['Raigarh', 31], ['Sukma', 31]]

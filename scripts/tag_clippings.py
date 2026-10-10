@@ -28,7 +28,7 @@ JS = """
 
 
 async def main():
-    recs = [r for r in json.load(open(SRC, encoding="utf-8"))["records"] if not r["cover"]]
+    recs = [r for r in json.load(open(SRC, encoding="utf-8"))["records"] if not r["cover"] and r["page"] != 0]
     page_url = "file:///" + os.path.join(ROOT, "JanDarpan.html").replace("\\", "/") + "?still"
     async with async_playwright() as p:
         b = await p.chromium.launch(channel="msedge")
