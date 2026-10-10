@@ -120,7 +120,7 @@
         ${card({ title: 'Try asking', body: `<div class="sugs">${[
           'Key negative sentiment this week', 'Issues raised by Congress in the last 3 days', 'Top posts on Mahtari Vandan', 'Farmers concerns in Janjgir-Champa',
           'Compare Raipur vs Bilaspur', 'How many X posts on farmers?', 'What did Bhupesh Baghel say?', 'Brief for today'].map(s => `<button data-ask="${s}">${I('search', 14)}${s}</button>`).join('')}</div>` })}
-        ${card({ title: 'How it answers', body: `<ol class="how"><li><b>Parse</b> window, district, topic, channel, intent</li><li><b>Query</b> the store of 25+ parameters per item</li><li><b>Compose</b> with numbers and evidence links</li></ol><p class="muted sm">An LLM layer can sit on top for free-form summaries; the numbers always come from the store.</p>` })}
+        ${card({ title: 'How it answers', body: `<ol class="how"><li><b>Parse</b> window, district, topic, channel, intent</li><li><b>Query</b> the store of 25+ parameters per item</li><li><b>Compose</b> with numbers and evidence links</li></ol><p class="muted sm">Every number is computed from the data and links to its evidence.</p>` })}
       </aside></div>`;
   };
 
@@ -229,7 +229,7 @@
     }).sort((a, b) => ((CGP.mlas[a.seat] || {}).no || 999) - ((CGP.mlas[b.seat] || {}).no || 999));
     const pc = CGP.partyCount ? CGP.partyCount() : {}, ro = CGP.roster || {};
     const tiles = Object.keys(pc).length ? `<div class="tiles">${Object.keys(pc).sort((a, b) => pc[b] - pc[a]).map(k => `<div class="tile-s"><span>${U.esc(k)}</span><b>${pc[k]}</b></div>`).join('')}<div class="tile-s"><span>Seats</span><b>${ro.count || 0}</b></div></div>` : '';
-    const tbl = card({ cls: 'span12', title: 'MLAs and constituencies', sub: ro.count ? `All ${ro.count} seats with the sitting MLA. Click a row for the profile. ${U.esc(ro.source)}; roster as of ${U.esc(ro.asOf)}. Roles and by-election changes need a curator check.` : 'Import the MLA roster in the Data tab.',
+    const tbl = card({ cls: 'span12', title: 'MLAs and constituencies', sub: ro.count ? `All ${ro.count} seats with the sitting MLA. Click a row for the profile. ${U.esc(ro.source)}; roster as of ${U.esc(ro.asOf)}. Roles and by-election changes should be checked against the Election Commission before external use.` : 'The MLA roster is not available.',
       right: `<div class="filters"><input class="search" data-seatq placeholder="Search constituency, MLA or role" value="${U.esc(S.seatQ)}"/><select data-seatd><option value="all">All districts</option>${R.districts.map(d => `<option value="${d.id}" ${S.seatD === d.id ? 'selected' : ''}>${d.name}</option>`).join('')}<option value="other" ${S.seatD === 'other' ? 'selected' : ''}>Other districts</option></select><select data-seatp><option value="all">All parties</option>${Object.keys(pc).map(k => `<option value="${U.esc(k)}" ${S.seatP === k ? 'selected' : ''}>${U.esc(k)}</option>`).join('')}</select></div>`,
       body: `${tiles}<div class="mla-tbl-wrap"><table class="tbl mla-tbl"><thead><tr><th>#</th><th>Constituency</th><th>District</th><th>MLA</th><th>Party</th><th>Role</th><th class="r">2023 margin</th><th class="r">Items</th><th class="r">Net</th><th>Top issue</th></tr></thead><tbody>${seats.map(s => { const m = CGP.mlas[s.seat] || {}; const dn = m.district || U.dname(s.district); return `<tr class="click" tabindex="0" data-mla="${U.esc(s.seat)}"><td class="muted">${m.no || ''}</td><td><b>${U.esc(s.seat)}</b>${m.reserved && m.reserved !== 'GEN' ? ` <span class="tag neu">${m.reserved}</span>` : ''}${m.hi ? `<small>${U.esc(m.hi)}</small>` : ''}</td><td class="muted">${U.esc(dn)}</td><td>${m.name ? `<b>${U.esc(m.name)}</b>${m.nameHi ? `<small>${U.esc(m.nameHi)}</small>` : ''}` : '<span class="muted">Pending import</span>'}</td><td>${m.party ? `<span class="party ${U.esc(m.party)}">${U.esc(m.party)}</span>` : '<span class="muted">\u2014</span>'}</td><td class="muted role">${U.esc(m.role ? m.role.split(';')[0] : '')}</td><td class="r">${m.margin ? m.margin.toLocaleString('en-IN') : ''}</td><td class="r">${s.n}</td><td class="r"><span class="pill" style="--c:${netColor(s.st.net)}">${s.n ? sgn(s.st.net) : '\u2014'}</span></td><td>${U.esc(s.top)}</td></tr>`; }).join('')}</tbody></table></div>${seats.length ? '' : '<p class="muted">No seat matches the filters.</p>'}` });
     return `<div class="bento"><div class="span12 leaders-grid">${cards}</div>${tbl}</div>`;
@@ -240,7 +240,7 @@
     const m = CGP.mlas[seat]; if (!m) return '';
     const items = (CGP.M && CGP.M.S && CGP.M.S.items) || [];
     const nm = (m.name || '').toLowerCase();
-    const mine = items.filter(i => i.constituency === seat || (nm.length > 6 && (i.headline || '').toLowerCase().indexOf(nm) >= 0) || (m.nameHi && (i.headline || '').indexOf(m.nameHi) >= 0)).sort((a, b) => b.ts - a.ts);
+    const mine = items.filter(i => i.constituency === seat || (i.people || []).indexOf(m.name) >= 0 || (nm.length > 6 && (i.headline || '').toLowerCase().indexOf(nm) >= 0) || (m.nameHi && (i.headline || '').indexOf(m.nameHi) >= 0)).sort((a, b) => b.ts - a.ts);
     const st = E.stats(mine), con = E.concerns(mine, 3);
     const wiki = t => 'https://en.wikipedia.org/wiki/' + encodeURIComponent(String(t).replace(/ /g, '_'));
     const kv = [['Constituency', `${m.no}. ${m.constituency}${m.hi ? ' (' + m.hi + ')' : ''}`], ['Reservation', m.reserved === 'GEN' ? 'General' : m.reserved === 'ST' ? 'Scheduled Tribes' : 'Scheduled Castes'], ['District', m.district],
@@ -302,7 +302,7 @@
   // ───────────── Data ─────────────
   V.data = S => {
     const n = CGP.items.length, mn = new Date(CGP.dataMin).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }), mx = new Date(Math.max.apply(null, CGP.items.map(i => i.ts))).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
-    const st = { live: ['Live', 'pos'], next: ['Next', 'neu'], key: ['Needs API key', 'warn'], vendor: ['Needs vendor', 'warn'] };
+    const st = { live: ['Active', 'pos'], next: ['Planned', 'neu'], key: ['Not connected', 'warn'], vendor: ['Not connected', 'warn'] };
     const hs = { found: ['Found', 'pos'], verify: ['Verify', 'warn'], todo: ['To collect', 'neu'] };
     const status = card({ cls: 'span5', title: 'Dataset', sub: CGP.source === 'sample' ? 'Illustrative sample data' : 'Imported data',
       body: `<div class="tiles">${[['Items', n], ['From', mn], ['To', mx]].map(t => `<div class="tile-s"><span>${t[0]}</span><b>${t[1]}</b></div>`).join('')}</div>
@@ -330,12 +330,12 @@
       ['Likes', U.fmt(it.likes)], ['Shares', U.fmt(it.shares)], ['Comments', U.fmt(it.comments)], ['Views', U.fmt(it.views)], ['Traction', it.traction + '/100'],
       ['Misinformation risk', Math.round(it.misinfo * 100) + '%'], ['Urgency', it.urgency + '/100']
     ];
-    const origin = it.origin === 'sample' ? '<span class="tag warn">Sample</span>' : it.origin === 'link' ? '<span class="tag neu">Saved link</span>' : it.auto ? '<span class="tag neu">Auto-tagged</span>' : '';
+    const origin = it.clipId ? '<span class="tag neu">Clipping</span>' : it.origin === 'sample' ? '<span class="tag warn">Sample</span>' : it.origin === 'link' ? '<span class="tag neu">Saved link</span>' : it.auto ? '<span class="tag neu">Auto-tagged</span>' : '';
     const hl = it.stance < 0 || it.issue ? CGP.W.hist(it.issue, it.district) : '';
     return `<div class="mcard"><button class="mclose" data-close aria-label="Close">${I('close', 18)}</button>
       <div class="mhead">${C.chBadge(it.channel)}<span>${U.esc(it.source)} · ${U.when(it.ts)}</span>${origin}</div>
       <h3>${U.esc(it.headline)}</h3>${it.text && it.text !== it.headline ? `<p class="mtext">${U.esc(it.text)}</p>` : ''}
-      ${it.link ? `<p><a class="btn ghost" href="${U.esc(it.link)}" target="_blank" rel="noopener">${I('up', 16)} Open source</a> <button class="btn ghost" data-open-issue="${U.esc(it.issue)}">${I('clock', 16)} Issue history</button></p>` : ''}
+      ${it.clipId ? `<p><button class="btn ghost" data-clip="${it.clipId}">${I('news', 16)} Open clipping</button> <button class="btn ghost" data-open-issue="${U.esc(it.issue)}">${I('clock', 16)} Issue history</button></p>` : it.link ? `<p><a class="btn ghost" href="${U.esc(it.link)}" target="_blank" rel="noopener">${I('up', 16)} Open source</a> <button class="btn ghost" data-open-issue="${U.esc(it.issue)}">${I('clock', 16)} Issue history</button></p>` : ''}
       ${hl}<div class="kvgrid">${kv.map(k => `<div><span>${k[0]}</span><b>${U.esc(k[1])}</b></div>`).join('')}</div></div>`;
   };})(typeof window !== 'undefined' ? window : globalThis);
 

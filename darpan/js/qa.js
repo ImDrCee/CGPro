@@ -344,7 +344,7 @@
     asof(p) {
       const M = CGP.M, W = CGP.W, ts = /^(since|last|next)/.test(p.label || '') || !p.range ? Date.now() : p.range[0];
       const roles = M.asOf(ts);
-      return { html: `<p class="lead">Roles on record as of <b>${U.dstr(ts)}</b>. Dates are approximate, from public reports; a curator should verify them.</p><div class="blk">${roles.map(r => `<div class="orow"><div><b>${U.esc(r.who)}</b><p>${U.esc(r.role)} · since ${U.esc(r.from)}</p></div></div>`).join('') || '<p class="muted">No role on record for that date.</p>'}</div>` };
+      return { html: `<p class="lead">Roles on record as of <b>${U.dstr(ts)}</b>. Dates are approximate, from public reports; verify before external use.</p><div class="blk">${roles.map(r => `<div class="orow"><div><b>${U.esc(r.who)}</b><p>${U.esc(r.role)} · since ${U.esc(r.from)}</p></div></div>`).join('') || '<p class="muted">No role on record for that date.</p>'}</div>` };
     },
     statement(p) {
       const M = CGP.M, ss = M.statements().filter(s => (!p.leader || s.speaker.toLowerCase().indexOf(p.leader.toLowerCase().split(' ')[0]) >= 0) && (!p.topics.length || p.topics.indexOf(s.topic) >= 0));

@@ -52,6 +52,17 @@ Python standard library only. It reads Google News RSS month by month for 12 mon
 
 Accounts you add with the **Track** button are saved in your browser only. To have the collector fetch them too, use *Download watch-list*, save the file as `data/watchlist.json`, run `python scripts/track.py`, then commit and push.
 
+### Clippings screen
+
+The **Clippings** screen shows the team's daily newspaper clippings: filter by day, paper, tone, topic or person; open a clipping for its tags, metrics and neighbours; see who is covered and how each paper treats them. Every clipping is tagged by the same tagger as the rest of the data, so it counts in Pulse, People, Districts, Memory and the rest, and links back to its clipping.
+
+```
+python scripts/build_clippings.py    # OCR the PDFs in pulse_data/, save page images and pulse_data/clips.json (local only)
+python scripts/tag_clippings.py      # tag them with the app's tagger, write data/clippings.js (headline + tags only)
+```
+
+The PDFs, page images and OCR text never leave `pulse_data/` (git-ignored). The public data file keeps only the headline and the computed tags. To see page images in the app, use **Link clipping images** and choose `pulse_data/clips/`; the folder is read in the browser and nothing is uploaded.
+
 ### Sources taken from the team's daily clippings
 
 The team compiles a daily newspaper-clipping PDF by hand (scanned images, one clipping per page). `python scripts/ocr_clippings.py` reads them with Tesseract (Hindi + English) into `pulse_data/ocr/`, so the papers, editions and topics that matter can be counted. The PDFs and the OCR text are git-ignored and never published; only aggregate counts live in `darpan/js/data.js` (`clipStats`, and `clip` on each paper). *Library ? Tracked accounts* shows these papers first and follows them by default on first load.
@@ -76,7 +87,9 @@ darpan/js/qa.js           question parsing and answers (numbers are computed, ne
 darpan/js/views*.js       screens                darpan/js/app.js  state, events, import/export
 scripts/scrape.py         public-feed collector  data/live.js      collected headlines
 scripts/track.py          tracked-account updates  data/accounts.js
-scripts/ocr_clippings.py  OCR of the daily clipping PDFs (local only)\nscripts/build_mlas.py     MLA roster builder      data/mlas.js  darpan/js/roster.js
+scripts/ocr_clippings.py  plain OCR of the clipping PDFs (local only)
+scripts/build_clippings.py  headline, paper and page images from the PDFs (local only)
+scripts/tag_clippings.py  tags the clippings, writes data/clippings.js\nscripts/build_mlas.py     MLA roster builder      data/mlas.js  darpan/js/roster.js
 PRO.html + js/ + css/     Jan Pulse (v1)
 ```
 

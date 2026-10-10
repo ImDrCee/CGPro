@@ -57,6 +57,8 @@
     LEAD.forEach(l => { if (l.rx.test(text)) { entities.push(l.name); if (!lead && ((speakerType === 'opp' && l.group === 'opp') || (speakerType === 'govt' && l.group === 'govt'))) lead = l.name; } });
     ENT.forEach(e => { if (e.rx.test(text)) entities.push(e.name); });
     const mentionsCM = entities.indexOf(R.cm) >= 0;
+    const people = [];
+    (R.people || []).forEach(p => { if (p.rx.test(text) || p.en.test(text)) people.push(p.name); });
     const speaker = speakerType === 'media' ? (raw.s || 'Unknown') : lead || (speakerType === 'opp' ? 'Opposition (from headline)' : speakerType === 'govt' ? 'Government (from headline)' : 'BJP (from headline)');
     const misinfo = MIS.test(text) ? 0.6 : 0.05;
     const conf = +clamp(0.3 + (district ? 0.18 : 0) + (specific ? 0.22 : 0) + (stance ? 0.15 : 0) + (bc >= 2 ? 0.1 : 0) + (speakerType !== 'media' ? 0.05 : 0), 0, 0.95).toFixed(2);
@@ -65,7 +67,7 @@
       id: raw.id, ts: raw.ts, channel: raw.c || 'News · Online', source: raw.s || 'Unknown', language: raw.l === 'en' || dev(text) < 0.2 ? 'English' : 'Hindi',
       mediaType: raw.c === 'YouTube' ? 'Video' : raw.c === 'News · Print' ? 'Report (e-paper brand)' : raw.c === 'X' || raw.c === 'Facebook' || raw.c === 'Instagram' ? 'Post' : 'Article', prominence: '',
       speakerType, speaker, district, place, constituency, topic, scheme: (R.topics.filter(x => x.id === topic)[0] || {}).scheme || '',
-      issue: issueName, narrative: issueName, entities, mentionsCM, stance, sentiment,
+      issue: issueName, narrative: issueName, entities, people, mentionsCM, stance, sentiment,
       emotion: stance < 0 ? 'concern' : stance > 0 ? 'pride' : 'neutral', intent: speakerType === 'opp' ? 'allege' : misinfo > 0.5 ? 'rumour' : 'inform',
       hashtags: (text.match(/#[\w\u0900-\u097F]+/g) || []).slice(0, 4),
       likes: raw.k || 0, shares: raw.shares || 0, comments: raw.comments || 0, views: raw.v || 0, raw: 0, misinfo, headline: raw.t || '', text: raw.text || '',
@@ -139,7 +141,8 @@
     const extra = [];
     ((g.CGP_ACCOUNTS && g.CGP_ACCOUNTS.accounts) || []).forEach(a => a.items.forEach(r => { if (!have[r.id]) { have[r.id] = 1; extra.push(r); } }));
     const src = base.concat(extra);
-    const all = src.map(r => L.tag(r));
+    const clipItems = ((g.CGP_CLIPS && g.CGP_CLIPS.items) || []).map(c => Object.assign({}, c, { offState: false }));
+    const all = src.map(r => L.tag(r)).concat(clipItems);
     const items = all.filter(i => !i.offState);
     CGP.liveExcluded = all.length - items.length;
     L.cluster(items);

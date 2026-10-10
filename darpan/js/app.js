@@ -4,10 +4,11 @@
   const set = ST.settings;
   let theme = set.all().theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
 
-  const NAV = [['pulse', 'Pulse', 'pulse'], ['ask', 'Ask', 'ask'], ['districts', 'Districts', 'map'], ['voices', 'Voices', 'opp'], ['social', 'Social', 'trend'], ['memory', 'Memory', 'clock'],
+  const NAV = [['pulse', 'Pulse', 'pulse'], ['ask', 'Ask', 'ask'], ['clippings', 'Clippings', 'news'], ['districts', 'Districts', 'map'], ['voices', 'Voices', 'opp'], ['social', 'Social', 'trend'], ['memory', 'Memory', 'clock'],
     ['promises', 'Promises', 'check'], ['patterns', 'Patterns', 'net'], ['people', 'People', 'users'], ['brief', 'Brief', 'doc'], ['library', 'Library', 'link']];
   const TITLES = {
     pulse: ['Jan Darpan', 'What is being said now, with what history behind it'], ask: ['Ask', 'Questions answered from the archive, with evidence'],
+    clippings: ['Clippings', 'The daily newspaper clippings: who is covered, in which paper, and how'],
     districts: ['Districts', 'Concerns, sentiment and maps across the 10 districts'], voices: ['Voices', 'Attack lines, rebuttals, statements and prep packs'],
     social: ['Social', 'Traction, trends, amplification and official content'], memory: ['Memory', 'Issue history, recurrence, seasons, narratives and responses'],
     promises: ['Promises', 'Public commitments and what coverage says about delivery'], patterns: ['Patterns', 'Correlations across time, places, entities and sources'],
@@ -40,7 +41,7 @@
   }
   function topbar() {
     const t = TITLES[S.view], date = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
-    const filters = S.view !== 'library';
+    const filters = S.view !== 'library' && S.view !== 'clippings';
     return `<div class="tb-l"><h1>${t[0]}</h1><p>${t[1]} · ${date}</p></div>
       <div class="tb-r">
         ${filters ? `<div class="seg" role="group" aria-label="Time window">${[[1, '24h'], [3, '3d'], [7, '7d'], [14, '14d'], [30, '30d'], [90, '90d'], [365, '1y']].map(d => `<button class="${S.days === d[0] ? 'on' : ''}" data-days="${d[0]}">${d[1]}</button>`).join('')}</div>
@@ -52,7 +53,7 @@
   function ribbon() {
     const meta = CGP.liveMeta, n = ST.links.all().length;
     const gen = meta ? new Date(meta.generated).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : '';
-    const live = `<b>Live public headlines.</b> ${L.liveItems().length ? U.fmt(L.liveItems().length) + ' items from news feeds and YouTube, collected ' + gen + '. ' : 'No collected data file found. '}Topic, district and stance are <b>auto-tagged and unverified</b>; X, Facebook and Instagram are not scraped, so add posts in <a href="#library:links" data-nav="library:links">Library</a>.`;
+    const live = `<b>Live coverage.</b> ${L.liveItems().length ? U.fmt(L.liveItems().length) + ' items from news sites, YouTube and the daily clippings, updated ' + gen + '. ' : 'No coverage data is available right now. '}Topic, district and stance are <b>generated automatically</b> and can be corrected in the <a href="#library:review" data-nav="library:review">review queue</a>. Add social posts in the <a href="#library:links" data-nav="library:links">Library</a>.`;
     const samp = `<b>Sample data.</b> Fictional, with 24 months of seasons, episodes and responses to demonstrate memory. Switch to <a href="#" data-mode="live">Live</a> for real headlines.`;
     const msg = CGP.mode === 'live' ? live : CGP.mode === 'sample' ? samp : `<b>Live and sample data are mixed.</b> Use this only to explore; numbers combine real headlines with fictional items.`;
     return `<span class="pdot ${CGP.mode === 'live' ? 'live' : ''}"></span><span>${msg}${n ? ` · ${n} saved link${n > 1 ? 's' : ''} included` : ''}</span>`;
@@ -79,6 +80,7 @@
       (function step(t) { const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3); el.textContent = Math.round(end * e) + (el.getAttribute('data-s') || ''); if (k < 1) requestAnimationFrame(step); })(t0);
     });
   }
+  CGP.render = (o) => render(o);
   function go(view, tab) {
     if (!V[view]) return;
     S.view = view; if (tab) S.tab[view] = tab;
@@ -113,6 +115,7 @@
     setTimeout(() => { const el = modal().querySelector('input:not([type=checkbox]),textarea'); if (el) el.focus(); }, 40);
   }
   function openIssue(name) { openModal(V.issueModal(name)); }
+  CGP.openModal = openModal; CGP.closeModal = closeModal;
   function openItem(id) { const it = CGP.index[id]; if (it) openModal(V.item(it)); }
 
   // ───── import / export ─────
@@ -187,7 +190,7 @@
     if (d.rbIssue !== undefined) { ST.rebuttals.set(d.rbIssue, d.rbStatus || undefined); openIssue(d.rbIssue); return render({ keepScroll: true, noFocus: true }); }
     if (d.del) { const p = d.del.split('|'); if (!confirm('Delete this entry?')) return; ST[p[0]].remove(p[1]); CGP.refresh(); toast('Deleted'); return render({ keepScroll: true, noFocus: true }); }
     if (d.export) return doExport(d.export);
-    if (d.track) { try { ST.tracked.add(Object.assign(JSON.parse(d.track), { active: true })); toast('Added to watch-list'); } catch (x) { /* ignore */ } return render({ keepScroll: true, noFocus: true }); }
+    if (d.track) { try { ST.tracked.add(Object.assign(JSON.parse(d.track), { active: true })); toast('Now following'); } catch (x) { /* ignore */ } return render({ keepScroll: true, noFocus: true }); }
     if (d.rvSave) {
       const row = document.querySelector('[data-rv-row="' + d.rvSave + '"]'), it = CGP.index[d.rvSave]; if (!row || !it) return;
       const v = {}; row.querySelectorAll('[data-rv-f]').forEach(s => (v[s.dataset.rvF] = s.value));
@@ -195,7 +198,7 @@
       o.unchanged = o.topic === it.topic && o.district === it.district && o.stance === it.stance && o.speakerType === it.speakerType;
       ST.overrides.set(d.rvSave, o); CGP.refresh(); toast('Saved'); return render({ keepScroll: true, noFocus: true });
     }
-    if (t.hasAttribute('data-clear-all')) { if (confirm('Delete every saved link, commitment, statement, correction and setting from this browser?')) { ST.clearAll(); CGP.refresh(); toast('All saved data cleared'); render({ keepScroll: true }); } return; }
+    if (t.hasAttribute('data-clear-all')) { if (confirm('Delete every saved link, commitment, statement, correction and setting from this device?')) { ST.clearAll(); CGP.refresh(); toast('All saved data cleared'); render({ keepScroll: true }); } return; }
   });
 
   document.addEventListener('submit', e => {

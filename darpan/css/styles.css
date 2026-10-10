@@ -335,3 +335,29 @@ input[type=date][data-asof] { width: auto; }
 .mla-tbl td.role { max-width: 190px; font-size: 12px; } .mla-tbl { min-width: 880px; } .card .mla-tbl-wrap { overflow-x: auto; }
 .mcard .kvgrid { margin: 14px 0; }
 .cbar { flex: 1; height: 8px; border-radius: 99px; background: var(--bg); min-width: 80px; margin: 0 10px; overflow: hidden; } .cbar i { display: block; height: 100%; width: var(--w); background: linear-gradient(90deg, var(--pri), var(--pri2)); border-radius: 99px; }
+
+/* Clippings */
+.pbadge { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 9px; background: color-mix(in srgb, var(--c) 16%, transparent); color: var(--c); font-weight: 800; font-size: 10.5px; letter-spacing: .02em; flex: none; }
+.dayrail { display: flex; gap: 8px; overflow-x: auto; padding: 2px 0 10px; scrollbar-width: thin; } .dayrail .chip { flex: none; cursor: pointer; background: var(--bg); color: var(--ink2); } .dayrail .chip.on { color: #fff; background: linear-gradient(135deg, #5B5BF0, #8A63F5); } .dayrail .chip b { opacity: .7; font-weight: 700; }
+.filters.cf { margin-top: 10px; align-items: center; } .filters.cf .chip { cursor: pointer; background: var(--bg); color: var(--ink2); } .filters.cf .chip.on { color: #fff; background: linear-gradient(135deg, #5B5BF0, #8A63F5); } .filters.cf .chip b { opacity: .7; }
+.clipgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.clipcard { position: relative; background: var(--card); border-radius: 22px; padding: 18px 20px 16px; box-shadow: var(--shadow); cursor: pointer; display: flex; flex-direction: column; gap: 10px; transition: transform .18s, box-shadow .18s; border-left: 4px solid transparent; outline: none; }
+.clipcard:hover, .clipcard:focus-visible { transform: translateY(-2px); box-shadow: 0 18px 34px -16px rgba(60, 60, 120, .35); }
+.clipcard.crit { border-left-color: var(--neg); } .clipcard.sup { border-left-color: var(--pos); }
+.clipcard .cmeta { display: flex; align-items: center; gap: 9px; font-size: 12px; color: var(--muted); font-weight: 600; } .cmeta .grow { flex: 1; }
+.clipcard h4 { font-size: 15.5px; line-height: 1.45; font-weight: 700; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.clipcard .chips { gap: 6px; }
+.clipimg { background: var(--bg); border-radius: 14px; overflow: hidden; display: grid; place-items: center; color: var(--muted); } .clipimg img { width: 100%; display: block; }
+.clipimg.thumb { height: 150px; align-items: start; } .clipimg.thumb img { object-fit: cover; object-position: top; height: 150px; }
+.more { text-align: center; margin-top: 18px; }
+.side { display: flex; flex-direction: column; gap: 20px; }
+.orow.click { cursor: pointer; } .orow.click:hover b { color: var(--pri); }
+.divbar { display: flex; height: 8px; border-radius: 99px; background: var(--bg); overflow: hidden; min-width: 110px; } .divbar i { display: block; height: 100%; } .divbar i.neg { background: var(--neg); } .divbar i.pos { background: var(--pos); margin-left: auto; }
+.pn { display: inline-flex; align-items: center; gap: 3px; margin-right: 6px; font-size: 11px; } .pn .pbadge { width: 22px; height: 22px; font-size: 9px; border-radius: 7px; }
+.mcard.clipm { width: min(1100px, 96vw); display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 26px; align-items: start; }
+.clipm .cimgcol { position: sticky; top: 0; } .clipfull { display: block; background: var(--bg); border-radius: 18px; overflow: auto; max-height: 76vh; cursor: zoom-in; } .clipfull img { width: 100%; display: block; } .clipfull.big img { width: 190%; max-width: none; } .clipfull.big { cursor: zoom-out; }
+.clipfull .ph { display: grid; place-items: center; min-height: 260px; color: var(--muted); }
+.clipnoimg { background: var(--bg); border-radius: 18px; padding: 34px 26px; text-align: center; display: flex; flex-direction: column; gap: 10px; align-items: center; color: var(--ink2); } .clipnoimg p { font-size: 13px; color: var(--muted); max-width: 320px; }
+.clipm .cinfo h3 { margin: 10px 0 12px; font-size: 21px; line-height: 1.4; } .clipm .mhead { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+.clipm .kvgrid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); } .cnav { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+@media (max-width: 1180px) { .clipgrid { grid-template-columns: 1fr; } .mcard.clipm { grid-template-columns: 1fr; } .clipm .cimgcol { position: static; } }
