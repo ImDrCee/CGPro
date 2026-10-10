@@ -405,3 +405,11 @@ input[type=date][data-asof] { width: auto; }
 .mhead { margin: 14px 0 8px; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 800; }
 .mcard.form .fld input { width: 100%; padding: 11px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); outline: none; }
 .mcard.form ol.how { margin: 12px 0 16px 18px; display: flex; flex-direction: column; gap: 6px; font-size: 13.5px; } .mcard.form ol.how a { color: var(--pri); font-weight: 700; }
+
+/* Pulse: Social desk */
+.sdesks { display: flex; flex-direction: column; gap: 12px; margin-top: 6px; }
+.sdesk { display: flex; align-items: center; gap: 14px; padding: 16px 18px; border-radius: 18px; background: var(--bg); text-align: left; transition: transform .15s, box-shadow .15s; }
+.sdesk:hover { transform: translateY(-1px); box-shadow: 0 12px 24px -16px rgba(60, 60, 120, .4); }
+.sdesk .pi { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 14px; background: var(--pri-soft); color: var(--pri); flex: none; }
+.sdesk .tx { display: flex; flex-direction: column; gap: 2px; flex: 1; } .sdesk b { font-size: 14.5px; } .sdesk em { font-style: normal; font-size: 12.5px; color: var(--muted); font-weight: 600; }
+.sdesk .go { color: var(--pri); }
