@@ -362,3 +362,8 @@ input[type=date][data-asof] { width: auto; }
 .clipm .kvgrid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); } .cnav { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
 @media (max-width: 1180px) { .clipgrid { grid-template-columns: 1fr; } .mcard.clipm { grid-template-columns: 1fr; } .clipm .cimgcol { position: static; } }
 .donut-wrap .dl .off { opacity: .55; } .donut-wrap .dl .off b { font-weight: 600; font-size: 11px; }
+
+.qboxes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 18px; }
+.qbox { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; text-align: left; padding: 16px 16px 14px; border-radius: 18px; background: var(--bg); transition: transform .18s, box-shadow .18s; } .qbox svg { color: var(--pri); margin-bottom: 6px; } .qbox b { font-size: 14px; } .qbox span { font-size: 12px; color: var(--muted); font-weight: 600; }
+.qbox:hover { transform: translateY(-2px); box-shadow: 0 14px 28px -16px rgba(60, 60, 120, .4); }
+@media (max-width: 700px) { .qboxes { grid-template-columns: 1fr; } }

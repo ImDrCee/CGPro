@@ -66,7 +66,7 @@
 
     const map = card({ cls: 'span7', title: 'District heat', sub: 'Concern load per district · click for detail',
       right: `<button class="link" data-nav="districts">Open ${I('up', 14)}</button>`,
-      body: C.tileMap(dist.map(r => ({ d: r.d, value: r.concernScore, label: r.concernScore, tone: 'var(--neg)', tip: `<b>${r.d.name}</b> · ${r.st.n} items<br>Net ${sgn(r.st.net)}<br>${r.concerns[0] ? U.esc(r.concerns[0].issue) : ''}` }))) });
+      body: C.tileMap(dist.map(r => ({ d: r.d, value: r.concernScore, label: r.concernScore, tone: 'var(--neg)', tip: `<b>${r.d.name}</b> · ${r.st.n} items<br>Net ${sgn(r.st.net)}<br>${r.concerns[0] ? U.esc(r.concerns[0].issue) : ''}` }))) + `<div class="qboxes"><button class="qbox" data-nav="social">${I('trend', 20)}<b>Amplification candidates</b><span>Posts worth boosting</span></button><button class="qbox" data-ask="Any rumours or misinformation spreading?">${I('alert', 20)}<b>Is a claim recycled?</b><span>Rumours and old content</span></button><button class="qbox" data-ask="Which posts got the best traction?">${I('pulse', 20)}<b>What is trending?</b><span>Best traction now</span></button></div>` });
 
     const al = card({ cls: 'span5', title: 'Alerts', sub: 'Last 24h vs the prior 6-day daily average',
       body: alerts.length ? `<div class="alerts">${alerts.map(a => `<button class="alert ${a.sev}" data-ask="What are the key concerns in ${U.dname(a.topDist[0])}?"><span class="ad">${I('alert', 16)}</span><div><b>${U.esc(a.issue)}</b><p>${a.topDist.map(U.dname).join(', ')} · ${a.last24} items in 24h vs ${a.base.toFixed(1)}/day${a.misinfo >= 2 ? ' · rumour risk' : ''}</p></div><em>${a.ratio >= 10 ? '10x+' : a.ratio.toFixed(1) + 'x'}</em></button>`).join('')}</div>` : '<p class="empty">No spikes detected.</p>' });
@@ -74,8 +74,6 @@
     const posts = card({ cls: 'span7', title: 'Top posts by traction', sub: 'Across all channels', right: `<button class="link" data-nav="social">All posts ${I('up', 14)}</button>`, body: top.map(C.postRow).join('') });
 
     const W = CGP.W, M = CGP.M;
-    const role = R.roles.find(r => r.id === S.role) || R.roles[0];
-    const quick = card({ cls: 'span12 quick', body: `<div class="qrow"><div><span class="eyebrow dark">${role.mode} view · ${role.label}</span><p>${role.blurb}</p></div><div class="chips">${role.quick.map(q => `<button class="btn ghost" ${q[1].indexOf('ask:') === 0 ? `data-ask="${U.esc(q[1].slice(4))}"` : `data-nav="${q[1].slice(4)}"`}>${q[0]}</button>`).join('')}</div></div>` });
     const hist = con.slice(0, 3).map(c => W.hist(c.issue)).join('');
     const out = M.outlook().slice(0, 3), sys = M.systemic().slice(0, 1), an = M.analogues().slice(0, 1), rs = M.resurfacing().slice(0, 2), co = M.coordinated().slice(0, 1);
     const sig = card({ cls: 'span12', title: 'Memory signals', sub: 'What history adds to today\'s picture', right: `<button class="link" data-nav="memory">Open memory ${I('up', 14)}</button>`, body: `<div class="sigs">
@@ -83,7 +81,7 @@
       <div><h5>Patterns</h5>${sys.concat(an, co).map(W.corr).join('') || '<p class="muted sm">No systemic, analogue or coordinated pattern right now.</p>'}</div>
       <div><h5>Resurfacing</h5>${rs.length ? rs.map(r => `<div class="orow"><div><b>${U.esc(r.recent.headline.slice(0, 90))}</b><p>Close match to ${U.dstr(r.original.ts)} (${U.esc(r.original.source)})</p></div>${W.pill('check', 'warn')}</div>`).join('') : '<p class="muted sm">No old content resurfacing.</p>'}</div></div>` });
 
-    return `<div class="bento">${quick}${hero}${kpis}${area}${donut}${concerns}${map}${al}${posts}${sig}</div>`;
+    return `<div class="bento">${hero}${kpis}${area}${donut}${concerns}${map}${al}${posts}${sig}</div>`;
   };
 
   // ───────────── Ask ─────────────

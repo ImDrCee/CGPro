@@ -20,7 +20,7 @@
   const ph = parseHash();
   const role0 = set.all().role || 'social';
   const S = (CGP.state = {
-    view: ph.view && V[ph.view] ? ph.view : (R.roles.find(r => r.id === role0) || R.roles[0]).home, tab: {}, days: 7, channel: 'all', district: 'all', theme,
+    view: ph.view && V[ph.view] ? ph.view : 'pulse', tab: {}, days: 7, channel: 'all', district: 'all', theme,
     role: role0, chat: [], sel: 'raipur', metric: 'concern', tf: { channel: 'all', speaker: 'all', topic: 'all' }, seatQ: '', seatD: 'all',
     lib: { q: '', col: 'all', ch: 'all' }, cmp: 'yoy', stq: '', vq: '', vres: null, packTopic: 'farmers', dsId: null, asOf: '', dosD: 'raipur', dosSeat: ''
   });
@@ -42,18 +42,17 @@
   function topbar() {
     const t = TITLES[S.view], date = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
     const filters = S.view !== 'library' && S.view !== 'clippings';
-    return `<div class="tb-l"><h1>${t[0]}</h1><p>${t[1]} · ${date}</p></div>
+    return `<div class="tb-l"><h1>${t[0]}</h1><p>${S.view === 'pulse' ? date : t[1] + ' · ' + date}</p></div>
       <div class="tb-r">
         ${filters ? `<div class="seg" role="group" aria-label="Time window">${[[1, '24h'], [3, '3d'], [7, '7d'], [14, '14d'], [30, '30d'], [90, '90d'], [365, '1y']].map(d => `<button class="${S.days === d[0] ? 'on' : ''}" data-days="${d[0]}">${d[1]}</button>`).join('')}</div>
         <select class="sel" data-fd aria-label="District"><option value="all">All 10 districts</option>${R.districts.map(d => `<option value="${d.id}" ${S.district === d.id ? 'selected' : ''}>${d.name}</option>`).join('')}</select>
         <select class="sel" data-fc aria-label="Channel"><option value="all">All channels</option>${R.channels.map(c => `<option ${S.channel === c.id ? 'selected' : ''}>${c.id}</option>`).join('')}</select>` : ''}
-        <select class="sel role" data-role aria-label="View as" data-tip="Changes the home screen and the shortcuts">${R.roles.map(r => `<option value="${r.id}" ${S.role === r.id ? 'selected' : ''}>${r.label}</option>`).join('')}</select>
       </div>`;
   }
   function ribbon() {
     const meta = CGP.liveMeta, n = ST.links.all().length;
     const gen = meta ? new Date(meta.generated).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : '';
-    const live = `<b>Live coverage.</b> ${L.liveItems().length ? U.fmt(L.liveItems().length) + ' items from news sites, YouTube and the daily clippings, updated ' + gen + '. ' : 'No coverage data is available right now. '}Topic, district and stance are <b>generated automatically</b> and can be corrected in the <a href="#library:review" data-nav="library:review">review queue</a>. Add social posts in the <a href="#library:links" data-nav="library:links">Library</a>.`;
+    const live = `<b>Live coverage.</b> ${L.liveItems().length ? U.fmt(L.liveItems().length) + ' items from news sites, YouTube and the daily clippings, updated ' + gen + '. ' : 'No coverage data is available right now. '}`;
     const samp = `<b>Sample data.</b> Fictional, with 24 months of seasons, episodes and responses to demonstrate memory. Switch to <a href="#" data-mode="live">Live</a> for real headlines.`;
     const msg = CGP.mode === 'live' ? live : CGP.mode === 'sample' ? samp : `<b>Live and sample data are mixed.</b> Use this only to explore; numbers combine real headlines with fictional items.`;
     return `<span class="pdot ${CGP.mode === 'live' ? 'live' : ''}"></span><span>${msg}${n ? ` · ${n} saved link${n > 1 ? 's' : ''} included` : ''}</span>`;
