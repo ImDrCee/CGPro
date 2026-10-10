@@ -55,23 +55,30 @@
       ${card({ cls: 'kpi ' + (alerts.length ? 'warn' : ''), body: `<span class="kl">Active alerts</span><div class="kv">${cu(alerts.length)}</div><p class="kp">${alerts.length ? U.esc(alerts[0].issue) : 'All quiet'}</p>` })}
     </div>`;
 
-    const area = card({ cls: 'span8', title: 'Coverage over time', sub: 'Items per ' + (S.days <= 1 ? 'hour' : 'day') + ', by channel', right: `<span class="chip">${x.items.length} items</span>`,
+    const area = card({ cls: 'span8 eq', title: 'Coverage over time', sub: 'Items per ' + (S.days <= 1 ? 'hour' : 'day') + ', by channel', right: `<span class="chip">${x.items.length} items</span>`,
       body: C.stackedArea(all) + legend(R.channels.filter(c => chs.some(h => h.k === c.id)).map(c => ({ label: c.id, color: c.color }))) });
 
-    const donut = card({ cls: 'span4', title: 'Channel mix', sub: 'Where the conversation happens',
+    const donut = card({ cls: 'span4 eq', title: 'Channel mix', sub: 'Where the conversation happens',
       body: `<div class="donut-wrap">${C.donut(chs.map(c => ({ label: c.k, value: c.n, color: U.chColor(c.k) })), { big: U.fmt(x.items.length), small: 'items' })}<div class="dl">${R.channels.map(c => { const h = chs.find(z => z.k === c.id); return h ? `<div><i style="background:${c.color}"></i><span>${c.id}</span><b>${U.pct(h.n, x.items.length)}%</b></div>` : `<div class="off"><i style="background:${c.color}"></i><span>${c.id}</span><b>${/^(X|Facebook|Instagram)$/.test(c.id) && !CGP.socialOn(c.id) ? 'needs API access' : '0%'}</b></div>`; }).join('')}</div></div>${['X', 'Facebook', 'Instagram'].some(p => !CGP.socialOn(p)) ? `<p class="muted sm">${['X', 'Facebook', 'Instagram'].filter(p => !CGP.socialOn(p)).join(', ')} can be collected automatically once API access is set up. Until then, add posts by link in the <a href="#library:links" data-nav="library:links">Library</a>.</p>` : ''}` });
 
-    const concerns = card({ cls: 'span5', title: 'Key concerns', sub: 'Weighted by volume and traction', right: `<button class="link" data-ask="What are the key concerns from the 10 districts?">Ask ${I('up', 14)}</button>`,
-      body: (con.length ? C.hbars(con.map(c => ({ label: `<button class="ilink" data-open-issue="${U.esc(c.issue)}">${U.esc(c.issue)}</button>`, value: c.score, right: c.n, color: 'var(--neg)', sub: c.topDist.slice(0, 3).map(U.dname).join(' · ') + (c.trend > 25 ? ' · ▲ rising' : c.trend < -25 ? ' · ▼ easing' : '') }))) + '<h5>History</h5>' + con.slice(0, 3).map(c => CGP.W.hist(c.issue)).join('') : '<p class="empty">No critical items in this window.</p>') });
+    const concerns = card({ cls: 'span5 eq', title: 'Key concerns', sub: 'Weighted by volume and traction', right: `<button class="link" data-ask="What are the key concerns from the 10 districts?">Ask ${I('up', 14)}</button>`,
+      body: (con.length ? C.hbars(con.map(c => ({ label: `<button class="ilink" data-open-issue="${U.esc(c.issue)}">${U.esc(c.issue)}</button>`, value: c.score, right: c.n, color: 'var(--neg)', sub: c.topDist.slice(0, 3).map(U.dname).join(' · ') + (c.trend > 25 ? ' · ▲ rising' : c.trend < -25 ? ' · ▼ easing' : '') }))) : '<p class="empty">No critical items in this window.</p>') });
 
-    const map = card({ cls: 'span7', title: 'District heat', sub: 'Concern load per district · click for detail',
+    const history = card({ cls: 'span7 eq', title: 'History', sub: 'What happened before on today\'s top concerns',
+      right: `<button class="link" data-nav="memory">Open memory ${I('up', 14)}</button>`,
+      body: con.length ? con.slice(0, 3).map(c => CGP.W.hist(c.issue)).join('') : '<p class="empty">No concern to look back on in this window.</p>' });
+
+    const map = card({ cls: 'span7 eq', title: 'District heat', sub: 'Concern load per district · click for detail',
       right: `<button class="link" data-nav="districts">Open ${I('up', 14)}</button>`,
-      body: C.tileMap(dist.map(r => ({ d: r.d, value: r.concernScore, label: r.concernScore, tone: 'var(--neg)', tip: `<b>${r.d.name}</b> · ${r.st.n} items<br>Net ${sgn(r.st.net)}<br>${r.concerns[0] ? U.esc(r.concerns[0].issue) : ''}` }))) + `<div class="qboxes"><button class="qbox" data-nav="social">${I('trend', 20)}<b>Amplification candidates</b><span>Posts worth boosting</span></button><button class="qbox" data-ask="Any rumours or misinformation spreading?">${I('alert', 20)}<b>Is a claim recycled?</b><span>Rumours and old content</span></button><button class="qbox" data-ask="Which posts got the best traction?">${I('pulse', 20)}<b>What is trending?</b><span>Best traction now</span></button></div>` });
+      body: C.tileMap(dist.map(r => ({ d: r.d, value: r.concernScore, label: r.concernScore, tone: 'var(--neg)', tip: `<b>${r.d.name}</b> · ${r.st.n} items<br>Net ${sgn(r.st.net)}<br>${r.concerns[0] ? U.esc(r.concerns[0].issue) : ''}` }))) });
 
-    const al = card({ cls: 'span5', title: 'Alerts', sub: 'Last 24h vs the prior 6-day daily average',
+    const act = (icon, title, sub, attr) => `<button class="card span4 actcard" ${attr}><span class="pi">${I(icon, 20)}</span><h3>${title}</h3><p>${sub}</p><span class="go">Open ${I('up', 14)}</span></button>`;
+    const actions = act('trend', 'Amplification candidates', 'Posts worth boosting', 'data-nav="social"') + act('alert', 'Is a claim recycled?', 'Rumours and old content', 'data-ask="Any rumours or misinformation spreading?"') + act('pulse', 'What is trending?', 'Best traction now', 'data-ask="Which posts got the best traction?"');
+
+    const al = card({ cls: 'span5 eq', title: 'Alerts', sub: 'Last 24h vs the prior 6-day daily average',
       body: alerts.length ? `<div class="alerts">${alerts.map(a => `<button class="alert ${a.sev}" data-ask="What are the key concerns in ${U.dname(a.topDist[0])}?"><span class="ad">${I('alert', 16)}</span><div><b>${U.esc(a.issue)}</b><p>${a.topDist.map(U.dname).join(', ')} · ${a.last24} items in 24h vs ${a.base.toFixed(1)}/day${a.misinfo >= 2 ? ' · rumour risk' : ''}</p></div><em>${a.ratio >= 10 ? '10x+' : a.ratio.toFixed(1) + 'x'}</em></button>`).join('')}</div>` : '<p class="empty">No spikes detected.</p>' });
 
-    const posts = card({ cls: 'span7', title: 'Top posts by traction', sub: 'Across all channels', right: `<button class="link" data-nav="social">All posts ${I('up', 14)}</button>`, body: top.map(C.postRow).join('') });
+    const posts = card({ cls: 'span12', title: 'Top posts by traction', sub: 'Across all channels', right: `<button class="link" data-nav="social">All posts ${I('up', 14)}</button>`, body: top.map(C.postRow).join('') });
 
     const W = CGP.W, M = CGP.M;
     const hist = con.slice(0, 3).map(c => W.hist(c.issue)).join('');
@@ -81,7 +88,7 @@
       <div><h5>Patterns</h5>${sys.concat(an, co).map(W.corr).join('') || '<p class="muted sm">No systemic, analogue or coordinated pattern right now.</p>'}</div>
       <div><h5>Resurfacing</h5>${rs.length ? rs.map(r => `<div class="orow"><div><b>${U.esc(r.recent.headline.slice(0, 90))}</b><p>Close match to ${U.dstr(r.original.ts)} (${U.esc(r.original.source)})</p></div>${W.pill('check', 'warn')}</div>`).join('') : '<p class="muted sm">No old content resurfacing.</p>'}</div></div>` });
 
-    return `<div class="bento">${hero}${kpis}${area}${donut}${concerns}${map}${al}${posts}${sig}</div>`;
+    return `<div class="bento">${hero}${kpis}${area}${donut}${concerns}${history}${map}${al}${actions}${posts}${sig}</div>`;
   };
 
   // ───────────── Ask ─────────────
