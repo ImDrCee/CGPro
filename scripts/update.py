@@ -99,7 +99,7 @@ def git(*args):
 
 def publish(stamp):
     say("\n== Publishing")
-    git("add", "data", "scripts", "darpan", "JanDarpan.html", "README.md")
+    git("add", "data", "scripts", "darpan", "JanDarpan.html", "README.md", "JanDarpan-update.cmd")
     if not git("status", "--porcelain").stdout.strip():
         say("   nothing changed")
         return
