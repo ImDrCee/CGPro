@@ -165,6 +165,16 @@ def main():
         got, notes = collect_fb(by["Facebook"], days, cap, tok); items += got; status["Facebook"] = {"connected": True, "accounts": len(by["Facebook"]), "posts": len(got), "notes": notes}
     else:
         status["Facebook"] = {"connected": False}
+    # Keep X posts collected from a signed-in session when no API token is configured, so a refresh never wipes them.
+    try:
+        prev = json.loads(open(OUT, encoding="utf-8").read()[len("window.CGP_SOCIAL = "):].rstrip().rstrip(";"))
+    except Exception:
+        prev = {}
+    if not os.environ.get("X_BEARER_TOKEN"):
+        kept = [i for i in prev.get("items", []) if i.get("q") == "x_browser" and i["ts"] / 1000 > time.time() - 100 * 86400]
+        if kept:
+            items += kept
+            status["X"] = {"connected": True, "accounts": len(by["X"]), "posts": len(kept), "source": "signed-in session"}
     items.sort(key=lambda i: -i["ts"])
     payload = {"meta": {"generated": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "days": days, "status": {k: {kk: vv for kk, vv in v.items() if kk != "notes"} for k, v in status.items()}}, "items": items}
     with open(OUT, "w", encoding="utf-8", newline="\n") as f:
