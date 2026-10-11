@@ -182,10 +182,16 @@ def main():
             workers = int(a.split("=")[1])
         elif a.startswith("--limit="):
             limit = int(a.split("=")[1])
-    records = []
+    records, done_files = [], []
+    target = os.path.join(SRC, "clips.json")
+    if os.path.exists(target) and not limit:
+        prev = json.load(open(target, encoding="utf-8"))
+        records, done_files = prev.get("records", []), prev.get("files", [])
     with ProcessPoolExecutor(max_workers=workers) as ex:
         for path in sorted(glob.glob(os.path.join(SRC, "*.pdf"))):
             name = os.path.basename(path)
+            if name in done_files:
+                continue
             date = date_from_name(name)
             n = len(pymupdf.open(path))
             if limit:
@@ -208,9 +214,10 @@ def main():
                 records.append({"id": "%s-%03d" % (date, i), "date": date, "page": i, "paper": papers[i], "edition": ed.group(1).title() if ed else "",
                                 "headline": r["headline"], "text": r["text"], "w": r["w"], "h": r["h"], "img": "%s/%03d.jpg" % (date, i),
                                 "cover": bool(re.search(r"न्यूज़? पेपर कतरन|पेपर कतरन", r["text"][:200]))})
+            done_files.append(name)
             print("done", name, n, flush=True)
     with open(os.path.join(SRC, "clips.json"), "w", encoding="utf-8") as f:
-        json.dump({"records": records}, f, ensure_ascii=False)
+        json.dump({"records": records, "files": done_files}, f, ensure_ascii=False)
     print("records", len(records))
 
 

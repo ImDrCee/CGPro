@@ -32,6 +32,18 @@ Add any article, post or video link (one by one, pasted in bulk, or by importing
 
 Import format (array or `{"items":[…]}`): `url`, and optionally `title`, `text`, `date`, `channel`, `source`, `speakerType` (`media|opp|govt|bjp|citizen`), `topic`, `district`, `stance`, `likes`, `shares`, `comments`, `views`.
 
+## Updating the data
+
+One command refreshes everything and publishes it:
+
+```
+python scripts/update.py            # full: headlines, outlet feeds, followed accounts, social (if configured), new clippings, publish
+python scripts/update.py --quick    # headlines and accounts only (no YouTube), a few minutes
+python scripts/update.py --no-push  # collect and tag only
+```
+
+Double-click `JanDarpan-update.cmd` for the same thing, or type `/JanDarpan-update` in Copilot. The update collects the newest public items, adds social posts when API access is configured, reads any new clipping PDFs placed in `pulse_data/` (OCR, local only), bumps the cache version, commits the data files, pushes, and waits until the site shows the new version.
+
 ## Collecting public headlines
 
 ```

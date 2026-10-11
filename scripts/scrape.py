@@ -336,6 +336,7 @@ class Collector:
         self.google_window_mode = "after_before"
         self.google_window_note = None
         self.recent = False
+        self.latest = False
 
     def note(self, message):
         if message and message not in self.base_notes:
@@ -423,6 +424,8 @@ class Collector:
                 if allow_404_empty and exc.code == 404:
                     return "", None
                 last_error = f"HTTP {exc.code}"
+                if exc.code in (404, 410):
+                    break
             except Exception as exc:
                 self.host_last_request[host] = time.monotonic()
                 last_error = f"{exc.__class__.__name__}: {exc}"
@@ -604,6 +607,8 @@ class Collector:
         return f"https://news.google.com/rss/search?q={encoded_query}&hl=en-IN&gl=IN&ceid=IN:en"
 
     def feed_requests_for_core_query(self, query):
+        if self.latest:
+            return [{"label": "when:7d", "query": f"{query['text']} when:7d"}]
         requests = []
         this_month = first_day_of_month(self.today)
         if self.google_window_mode == "after_before":
@@ -623,6 +628,8 @@ class Collector:
         return requests
 
     def feed_requests_for_district_query(self, query):
+        if self.latest:
+            return [{"label": "when:7d", "query": f"{query['text']} when:7d"}]
         requests = []
         this_month = first_day_of_month(self.today)
         if self.google_window_mode == "after_before":
@@ -1024,21 +1031,25 @@ class Collector:
 
 
 def main():
-    """Usage: python scripts/scrape.py [--resume] [--recent] [--phases=google,youtube,rss]"""
+    """Usage: python scripts/scrape.py [--resume] [--recent] [--latest] [--phases=google,youtube,rss]"""
     import sys
 
     phases = ("google", "youtube", "rss")
     resume = False
     recent = False
+    latest = False
     for arg in sys.argv[1:]:
         if arg == "--resume":
             resume = True
         elif arg == "--recent":
             recent = True
+        elif arg == "--latest":
+            latest = True
         elif arg.startswith("--phases="):
             phases = tuple(p.strip() for p in arg.split("=", 1)[1].split(",") if p.strip())
     collector = Collector()
     collector.recent = recent
+    collector.latest = latest
     try:
         if resume:
             collector.load_existing()
