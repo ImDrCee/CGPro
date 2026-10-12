@@ -7,7 +7,7 @@
 
   C.postRow = it => `<div class="prow" data-item="${it.id}">
     ${C.chBadge(it.channel)}
-    <div class="pbody"><div class="pmeta"><b>${U.esc(it.source)}</b><span>${U.ago(it.ts)} · ${U.dname(it.district)}</span>${C.stanceTag(it.stance)}</div><p>${U.esc(it.headline)}</p></div>
+    <div class="pbody"><div class="pmeta"><b>${U.esc(it.source)}</b><span>${U.ago(it.ts)} · ${U.dname(it.district)}</span>${C.stanceTag(U.gs(it))}</div><p>${U.esc(it.headline)}</p></div>
     <div class="pstats"><span>${I('heart', 14)}${U.fmt(it.likes)}</span><span>${I('share', 14)}${U.fmt(it.shares)}</span><span>${I('eye', 14)}${U.fmt(it.views)}</span><em class="tr" data-tip="Traction score (0-100)">${it.traction}</em></div></div>`;
 
   const tiles = a => `<div class="tiles">${a.map(t => `<div class="tile-s"><span>${t.l}</span><b>${t.v}</b>${t.d ? `<em class="${t.dc || ''}">${t.d}</em>` : ''}</div>`).join('')}</div>`;

@@ -21,6 +21,17 @@
   const dev = s => { let d = 0, l = 0; for (const c of s) { if (/[\u0900-\u097F]/.test(c)) d++; if (/[A-Za-z\u0900-\u097F]/.test(c)) l++; } return l ? d / l : 0; };
 
   const L = (CGP.live = {});
+  // A plain crime, accident or disaster report is negative news but not criticism of the government. A report that names the
+  // opposition, the government or a leader, or blames the police or administration, still counts as critical.
+  const EVENT = rxi('हत्या|मौत|मृत|हादसा|दुर्घटना|चोरी|लूट|ठगी|फ्रॉड|धोखाधड़ी|आग|बाढ़|डूब|घायल|गिरफ्तार|दुष्कर्म|छेड़छाड़|मारपीट|जानलेवा|बीमारी|डेंगू|मलेरिया|accident|crash|murder|killed|dead|death|fire|flood|theft|robbery|fraud|arrest|injur|drown|collaps|outbreak|disease|crime');
+  const BLAME = rxi('सरकार|प्रशासन|लापरवाही|नाकाम|विफल|सवाल|जवाबदेह|कानून व्यवस्था|पुलिस की|अनदेखी|भ्रष्टाचार|घोटाला|मुख्यमंत्री|गृह मंत्री|गृहमंत्री|कांग्रेस|विपक्ष|भाजपा|negligen|failure|lapse|blame|accountab|government|opposition|congress|bjp|minister|corrupt|scam');
+  L.addGov = (it, manual) => {
+    it.gstance = it.stance; it.event = false;
+    if (manual || it.stance >= 0 || it.speakerType !== 'media' || it.mentionsCM || (it.people && it.people.length)) return;
+    const text = (it.headline || '') + ' ' + (it.text || '');
+    if (BLAME.test(text)) return;
+    if (it.topic === 'law' || EVENT.test(text)) { it.gstance = 0; it.event = true; }
+  };
   L.cutoff = () => { const d = new Date(); d.setHours(0, 0, 0, 0); d.setMonth(d.getMonth() - (R.archiveMonths || 12)); return d.getTime(); };
   CGP.socialOn = p => !!(g.CGP_SOCIAL && g.CGP_SOCIAL.meta && g.CGP_SOCIAL.meta.status && g.CGP_SOCIAL.meta.status[p] && g.CGP_SOCIAL.meta.status[p].connected);
   L.tok = t => String(t || '').toLowerCase().replace(/\s+[-–|]\s+[^-–|]{2,40}$/, '').replace(/[^\p{L}\p{N}\s]/gu, ' ').split(/\s+/).filter(w => w.length > 2);
@@ -124,7 +135,9 @@
     if (k.speakerType) { it.speakerType = k.speakerType; if (!k.source) it.speaker = it.source; }
     if (k.district) it.district = k.district;
     if (k.topic) it.topic = k.topic;
-    if (k.stance !== undefined && k.stance !== '' && k.stance !== null) it.stance = +k.stance;
+    const manualStance = k.stance !== undefined && k.stance !== '' && k.stance !== null;
+    if (manualStance) it.stance = +k.stance;
+    L.addGov(it, manualStance);
     it.conf = 1; it.auto = false; it.curated = true; it.linkId = k.id; it.collection = k.collection || '';
     if (k.speakerType && k.speakerType !== 'media') it.speaker = k.source || d.source;
     return it;
@@ -132,7 +145,7 @@
 
   L.applyOverrides = function (items) {
     const ov = ST.overrides.all();
-    items.forEach(it => { const o = ov[it.id]; if (!o) return; Object.assign(it, o); it.curated = true; it.auto = false; it.conf = 1; if (o.topic && !o.issue) it.issue = U.tshort(o.topic) + ' coverage'; });
+    items.forEach(it => { const o = ov[it.id]; if (!o) return; Object.assign(it, o); if (o.stance !== undefined) { it.gstance = o.stance; it.event = false; } it.curated = true; it.auto = false; it.conf = 1; if (o.topic && !o.issue) it.issue = U.tshort(o.topic) + ' coverage'; });
   };
 
   // ───── assembly ─────
@@ -148,6 +161,7 @@
     const all = src.map(r => L.tag(r)).concat(clipItems);
     const cut = L.cutoff();
     const items = all.filter(i => !i.offState && i.ts >= cut);
+    items.forEach(i => L.addGov(i));
     CGP.liveExcluded = all.length - items.length;
     L.cluster(items);
     CGP.liveMeta = (g.CGP_LIVE && g.CGP_LIVE.meta) || null;

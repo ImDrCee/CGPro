@@ -413,3 +413,5 @@ input[type=date][data-asof] { width: auto; }
 .sdesk .pi { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 14px; background: var(--pri-soft); color: var(--pri); flex: none; }
 .sdesk .tx { display: flex; flex-direction: column; gap: 2px; flex: 1; } .sdesk b { font-size: 14.5px; } .sdesk em { font-style: normal; font-size: 12.5px; color: var(--muted); font-weight: 600; }
 .sdesk .go { color: var(--pri); }
+
+.kp.netw { font-size: 12.5px; margin-top: 6px; } .kp.netw b { color: var(--ink); } .kp.netw .link { margin-left: 6px; }

@@ -22,6 +22,8 @@
     return Math.round(m / 1440) + 'd ago';
   };
   U.when = ts => new Date(ts).toLocaleString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  // Stance toward the government. Plain crime, accident and disaster reports are negative news but not criticism, so they count as neutral here.
+  U.gs = i => (i.gstance !== undefined ? i.gstance : i.stance);
   U.dname = id => { const d = R.districts.filter(x => x.id === id)[0]; return d ? d.name : (id === 'other' ? 'Other districts' : id); };
   U.tname = id => { const t = R.topics.filter(x => x.id === id)[0]; return t ? t.name : id; };
   U.tshort = id => { const t = R.topics.filter(x => x.id === id)[0]; return t ? t.short : id; };
@@ -51,7 +53,7 @@
       (!f.topic || it.topic === f.topic) &&
       (!f.speaker || it.speakerType === f.speaker) &&
       (!f.cm || it.mentionsCM) &&
-      (!f.stance || (f.stance === 'critical' ? it.stance < 0 : f.stance === 'support' ? it.stance > 0 : it.stance === 0))
+      (!f.stance || (f.stance === 'critical' ? U.gs(it) < 0 : f.stance === 'support' ? U.gs(it) > 0 : U.gs(it) === 0))
     );
   };
 
@@ -59,14 +61,50 @@
     const s = { n: items.length, reach: 0, eng: 0, support: 0, critical: 0, neutral: 0, cm: 0, misinfo: 0, traction: 0, net: 0 };
     items.forEach(i => {
       s.reach += i.views; s.eng += i.likes + i.shares + i.comments;
-      if (i.stance > 0) s.support++; else if (i.stance < 0) s.critical++; else s.neutral++;
+      const g = U.gs(i);
+      if (g > 0) s.support++; else if (g < 0) s.critical++; else s.neutral++;
+      if (i.event && i.stance < 0) s.events = (s.events || 0) + 1;
       if (i.mentionsCM) s.cm++;
       if (i.misinfo >= 0.5) s.misinfo++;
       s.traction += i.traction;
     });
+    s.events = s.events || 0;
     s.avgTraction = s.n ? Math.round(s.traction / s.n) : 0;
     s.net = s.n ? Math.round((100 * (s.support - s.critical)) / s.n) : 0;
     return s;
+  };
+
+
+  // ───── Weighted Net stance ─────
+  // Direction of each item (stance toward the government, a little stronger when the wording is strong) multiplied by how much the
+  // item matters: topic importance, urgency, spread across outlets, reach, source weight, recency and tagging confidence.
+  // Result is scaled to -100..+100 and pulled toward 0 when there are few items.
+  const SRC = {};
+  const srcWeight = it => {
+    if (it.clipId) return 0.8;
+    const k = it.source || ''; if (SRC[k] != null) return SRC[k];
+    const m = R.mediaCatalog.find(x => new RegExp(x.match, 'i').test(k));
+    return (SRC[k] = m ? (m.tier === 1 ? 1.0 : m.tier === 2 ? 0.8 : 0.6) : 0.5);
+  };
+  const OFFICIAL_PAGE = /government portal|\(website\)/i;
+  E.netWeighted = (items, end) => {
+    end = end || Date.now();
+    const W = R.netWeights || {}, rows = [];
+    items.forEach(it => {
+      if (OFFICIAL_PAGE.test(it.source || '')) return;
+      const dir = U.gs(it) * (0.85 + 0.15 * Math.min(1, Math.abs(it.sentiment || 0) * 2));
+      const imp = W[it.topic] != null ? W[it.topic] : 0.5;
+      const urg = Math.min(1, (it.urgency || 0) / 100), spread = Math.min(1, 0.4 + 0.2 * Math.min(3, (it.pickup || 1) - 1));
+      const reach = Math.min(1, Math.log10(1 + (it.views || 0)) / 5), rec = Math.pow(0.5, Math.max(0, end - it.ts) / (3 * 86400000));
+      const w = Math.min(3, 4 * (0.4 + 0.6 * imp) * (0.6 + 0.4 * urg) * (0.6 + 0.4 * spread) * (0.6 + 0.4 * reach) * srcWeight(it) * (0.5 + 0.5 * rec) * Math.max(0.3, it.conf || 0.5));
+      rows.push({ it, dir, w });
+    });
+    const n = rows.length, sw = rows.reduce((t, r) => t + r.w, 0), sd = rows.reduce((t, r) => t + r.dir * r.w, 0);
+    const raw = sw ? (100 * sd) / sw : 0, value = Math.round(raw * n / (n + 20));
+    const by = {};
+    rows.forEach(r => { const o = by[r.it.topic] || (by[r.it.topic] = { topic: r.it.topic, n: 0, w: 0, d: 0 }); o.n++; o.w += r.w; o.d += r.dir * r.w; });
+    const topics = Object.values(by).map(o => ({ topic: o.topic, n: o.n, share: sw ? Math.round(100 * o.w / sw) : 0, net: o.w ? Math.round(100 * o.d / o.w) : 0, push: sw ? Math.round(10 * (100 * o.d / sw) * n / (n + 20)) / 10 : 0 })).sort((a, b) => Math.abs(b.push) - Math.abs(a.push));
+    return { value, raw: Math.round(raw), n, topics };
   };
 
   E.countBy = (items, keyFn) => {

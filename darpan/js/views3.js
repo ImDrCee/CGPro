@@ -208,7 +208,7 @@
     const list = accItems(a, tg), its = list.map(i => tg[i.id] || null), has = its.filter(Boolean);
     const iss = {}; has.forEach(i => { if (i.issue && !i.generic && !i.broad) iss[i.issue] = (iss[i.issue] || 0) + 1; });
     const top = Object.keys(iss).sort((x, y) => iss[y] - iss[x])[0] || '';
-    const net = has.reduce((t, i) => t + (i.stance || 0), 0);
+    const net = has.reduce((t, i) => t + U.gs(i), 0);
     return { n7: list.filter(i => i.ts >= ref - 7 * DAY).length, n30: list.length, top, net, last: list[0] || null };
   };
   const feedBadge = a => {
@@ -226,7 +226,7 @@
       <h5>Sources checked</h5>
       ${(a.feeds || []).map(f => { const lab = { site: 'Website search', rss: 'Website feed', youtube: 'YouTube channel', mentions: 'News mentions' }[f.type] || f.type, n = (String(f.note).match(/^(\d+) /) || [])[1], note = !f.ok ? 'Not available right now' : /^No /.test(f.note) ? f.note : n != null ? n + ' items found' : 'Checked'; return `<div class="orow"><div><b>${U.esc(lab)}</b><p>${U.esc(note)}</p></div>${pill(f.ok ? 'ok' : 'unavailable', f.ok ? 'pos' : 'neg')}</div>`; }).join('') || '<p class="muted">Nothing yet.</p>'}
       <h5>Latest updates (${accItems(a, tg).length}, last ${(g.CGP_ACCOUNTS.meta || {}).days || 30} days)</h5>
-      ${accItems(a, tg).slice(0, 20).map(i => { const t = tg[i.id]; return `<div class="orow"><div><a href="${U.esc(i.u)}" target="_blank" rel="noopener"><b>${U.esc(i.t)}</b></a><p>${U.esc(i.s)} ? ${U.when(i.ts)}${i.v ? ' ? ' + U.fmt(i.v) + ' views' : ''}${i.kind === 'mention' ? ' ? cites the account' : ''}${t && t.issue && !t.generic ? ' ? ' + U.esc(t.issue) : ''}</p></div>${t ? pill(t.stance > 0 ? 'supportive' : t.stance < 0 ? 'critical' : 'neutral', t.stance > 0 ? 'pos' : t.stance < 0 ? 'neg' : 'neu') : ''}</div>`; }).join('') || '<p class="muted">No items in the window.</p>'}</div>`;
+      ${accItems(a, tg).slice(0, 20).map(i => { const t = tg[i.id]; return `<div class="orow"><div><a href="${U.esc(i.u)}" target="_blank" rel="noopener"><b>${U.esc(i.t)}</b></a><p>${U.esc(i.s)} ? ${U.when(i.ts)}${i.v ? ' ? ' + U.fmt(i.v) + ' views' : ''}${i.kind === 'mention' ? ' ? cites the account' : ''}${t && t.issue && !t.generic ? ' ? ' + U.esc(t.issue) : ''}</p></div>${t ? pill(U.gs(t) > 0 ? 'supportive' : U.gs(t) < 0 ? 'critical' : 'neutral', U.gs(t) > 0 ? 'pos' : U.gs(t) < 0 ? 'neg' : 'neu') : ''}</div>`; }).join('') || '<p class="muted">No items in the window.</p>'}</div>`;
   };
   const clipOf = name => { const m = R.mediaCatalog.find(x => x.name === name); return m && m.clip ? m.clip : null; };
   V.clipSources = () => {
@@ -248,7 +248,7 @@
     const rows = accts.map(a => ({ a, s: accStats(a, tg, ref) })).sort((x, y) => (y.s.n7 - x.s.n7) || (y.s.n30 - x.s.n30));
     const all7 = []; accts.forEach(a => accItems(a, tg).forEach(i => { if (i.ts >= ref - 7 * DAY) all7.push({ a, i, t: tg[i.id] }); }));
     const byIssue = {};
-    all7.forEach(r => { if (!r.t || !r.t.issue || r.t.generic || r.t.broad) return; const k = r.t.issue; (byIssue[k] = byIssue[k] || { k, n: 0, net: 0, who: {}, ex: r }); byIssue[k].n++; byIssue[k].net += r.t.stance || 0; byIssue[k].who[r.a.name] = 1; });
+    all7.forEach(r => { if (!r.t || !r.t.issue || r.t.generic || r.t.broad) return; const k = r.t.issue; (byIssue[k] = byIssue[k] || { k, n: 0, net: 0, who: {}, ex: r }); byIssue[k].n++; byIssue[k].net += U.gs(r.t); byIssue[k].who[r.a.name] = 1; });
     const pts = Object.values(byIssue).sort((x, y) => y.n - x.n).slice(0, 8);
     const latest = all7.sort((x, y) => y.i.ts - x.i.ts).slice(0, 8);
     const mine = ST.tracked.all(), seen = {};

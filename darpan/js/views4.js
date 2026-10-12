@@ -20,7 +20,7 @@
     const f = F(S), q = (f.q || '').trim().toLowerCase();
     let l = clips().filter(i => (f.month === 'all' || i.clipDate.slice(5, 7) === f.month) && (skip === 'day' || f.day === 'all' || i.clipDate === f.day)
       && (skip === 'paper' || f.paper === 'all' || i.source === f.paper)
-      && (skip === 'base' || f.tone === 'all' || (f.tone === 'crit' ? i.stance < 0 : f.tone === 'sup' ? i.stance > 0 : i.stance === 0))
+      && (skip === 'base' || f.tone === 'all' || (f.tone === 'crit' ? U.gs(i) < 0 : f.tone === 'sup' ? U.gs(i) > 0 : U.gs(i) === 0))
       && (skip === 'base' || f.topic === 'all' || i.topic === f.topic)
       && (skip === 'base' || f.person === 'all' || (i.people || []).indexOf(f.person) >= 0)
       && (skip === 'base' || !q || (i.headline + ' ' + i.issue + ' ' + i.place + ' ' + (i.people || []).join(' ') + ' ' + i.entities.join(' ') + ' ' + i.source).toLowerCase().indexOf(q) >= 0));
@@ -30,9 +30,9 @@
   }
 
   function stats(l) {
-    const n = l.length, crit = l.filter(i => i.stance < 0).length, sup = l.filter(i => i.stance > 0).length;
+    const n = l.length, crit = l.filter(i => U.gs(i) < 0).length, sup = l.filter(i => U.gs(i) > 0).length;
     const iss = {}, ent = {}, pap = {};
-    l.forEach(i => { if (i.issue && !i.generic && !i.broad) iss[i.issue] = (iss[i.issue] || 0) + 1; (i.people || []).forEach(e => { const o = ent[e] || (ent[e] = { name: e, n: 0, sup: 0, crit: 0 }); o.n++; if (i.stance > 0) o.sup++; else if (i.stance < 0) o.crit++; }); pap[i.source] = (pap[i.source] || 0) + 1; });
+    l.forEach(i => { if (i.issue && !i.generic && !i.broad) iss[i.issue] = (iss[i.issue] || 0) + 1; (i.people || []).forEach(e => { const o = ent[e] || (ent[e] = { name: e, n: 0, sup: 0, crit: 0 }); o.n++; if (U.gs(i) > 0) o.sup++; else if (U.gs(i) < 0) o.crit++; }); pap[i.source] = (pap[i.source] || 0) + 1; });
     return { n, crit, sup, neu: n - crit - sup, iss: Object.keys(iss).map(k => [k, iss[k]]).sort((a, b) => b[1] - a[1]), ent: Object.values(ent).sort((a, b) => b.n - a.n), pap, picked: l.filter(i => i.pickup > 1).length, cm: l.filter(i => i.mentionsCM).length };
   }
 
@@ -65,10 +65,10 @@
   }
 
   function card1(i) {
-    const crit = i.stance < 0, sup = i.stance > 0;
+    const crit = U.gs(i) < 0, sup = U.gs(i) > 0;
     return `<article class="clipcard ${crit ? 'crit' : sup ? 'sup' : ''}" tabindex="0" data-clip="${i.clipId}">
       ${CGP.clipImg.status === 'ready' ? imgBox(i, 'thumb') : ''}
-      <div class="cmeta">${badge(i.source)}<span>${U.esc(pname(i.source))} · p.${i.clipPg}${i.clipEd ? ' · ' + U.esc(i.clipEd) : ''}</span><span class="grow"></span>${C.stanceTag(i.stance)}</div>
+      <div class="cmeta">${badge(i.source)}<span>${U.esc(pname(i.source))} · p.${i.clipPg}${i.clipEd ? ' · ' + U.esc(i.clipEd) : ''}</span><span class="grow"></span>${i.event ? '<span class="tag neu" data-tip="Negative news, not criticism of the government">Incident report</span>' : C.stanceTag(U.gs(i))}</div>
       <h4>${U.esc(i.headline || ('Clipping from ' + pname(i.source) + ', page ' + i.clipPg))}</h4>
       <div class="chips">${i.issue && !i.generic ? `<span class="chip on">${U.esc(i.issue)}</span>` : ''}${i.place ? `<span class="chip ghost">${U.esc(i.place)}</span>` : ''}${(i.people || []).slice(0, 3).map(e => `<span class="chip ghost">${U.esc(e)}</span>`).join('')}${i.pickup > 1 ? `<span class="chip ghost" data-tip="Reported by ${i.pickup} outlets">${i.pickup} outlets</span>` : ''}</div>
       <small class="muted">${dlabel(i.clipDate)}</small></article>`;
@@ -122,7 +122,7 @@
     const f = F(S), l = clips().filter(i => (f.day === 'all' || i.clipDate === f.day)), all = clips();
     if (!all.length) return `<div class="bento">${card({ cls: 'span12', title: 'Issues', body: empty('No clippings loaded', '') })}</div>`;
     const g2 = {};
-    l.forEach(i => { if (!i.issue || i.generic || i.broad) return; const o = g2[i.issue] || (g2[i.issue] = { k: i.issue, n: 0, sup: 0, crit: 0, p: {}, st: {} }); o.n++; if (i.stance > 0) o.sup++; else if (i.stance < 0) o.crit++; o.p[i.source] = 1; o.st[i.story] = (o.st[i.story] || 0) + 1; });
+    l.forEach(i => { if (!i.issue || i.generic || i.broad) return; const o = g2[i.issue] || (g2[i.issue] = { k: i.issue, n: 0, sup: 0, crit: 0, p: {}, st: {} }); o.n++; if (U.gs(i) > 0) o.sup++; else if (U.gs(i) < 0) o.crit++; o.p[i.source] = 1; o.st[i.story] = (o.st[i.story] || 0) + 1; });
     const rows = Object.values(g2).sort((a, b) => b.n - a.n).slice(0, 40);
     return `<div class="bento">${card({ cls: 'span12', title: 'Issues in the clippings', sub: 'What the papers are reporting, with how many papers carry each issue.', right: dayRailSmall(S),
       body: `<div class="mla-tbl-wrap"><table class="tbl"><thead><tr><th>Issue</th><th class="r">Clippings</th><th class="r">Papers</th><th class="r">Supportive</th><th class="r">Critical</th><th>Tone</th></tr></thead><tbody>${rows.map(o => `<tr><td>${W.ilink(o.k)}</td><td class="r">${o.n}</td><td class="r">${Object.keys(o.p).length}</td><td class="r">${o.sup}</td><td class="r">${o.crit}</td><td><div class="divbar"><i class="pos" style="width:${pct(o.sup, o.n)}%"></i><i class="neg" style="width:${pct(o.crit, o.n)}%"></i></div></td></tr>`).join('')}</tbody></table></div>` })}</div>`;
@@ -142,12 +142,12 @@
     const prev = k > 0 ? l[k - 1] : null, next = k >= 0 && k < l.length - 1 ? l[k + 1] : null;
     const rel = clips().filter(x => x.story === i.story && x.clipId !== id);
     const kv = [['Paper', pname(i.source)], ['Edition', i.clipEd || '—'], ['Date', dlabel(i.clipDate) + ' 2026'], ['Page in the file', i.clipPg], ['Topic', U.tname(i.topic)], ['Issue', i.issue || '—'], ['District', i.place || '—'], ['Constituency', i.constituency || '—'],
-      ['Speaker type', R.speakers[i.speakerType] ? R.speakers[i.speakerType].label : i.speakerType], ['Tone', i.stance > 0 ? 'Supportive' : i.stance < 0 ? 'Critical' : 'Neutral'], ['Sentiment', (i.sentiment > 0 ? '+' : '') + i.sentiment], ['Reported by', i.pickup + (i.pickup > 1 ? ' outlets' : ' outlet')], ['Tag confidence', Math.round((i.conf || 0) * 100) + '%']];
+      ['Speaker type', R.speakers[i.speakerType] ? R.speakers[i.speakerType].label : i.speakerType], ['Tone', U.gs(i) > 0 ? 'Supportive' : U.gs(i) < 0 ? 'Critical' : 'Neutral'], ['Sentiment', (i.sentiment > 0 ? '+' : '') + i.sentiment], ['Reported by', i.pickup + (i.pickup > 1 ? ' outlets' : ' outlet')], ['Tag confidence', Math.round((i.conf || 0) * 100) + '%']];
     const ci = CGP.clipImg;
     const imgSide = ci.status === 'ready' ? `<a class="clipfull" data-clipimg="${imgPath(i)}" href="#" data-zoom><span class="ph">${I('doc', 22)}</span></a>` : `<div class="clipnoimg">${I('doc', 28)}<b>Read this clipping in the day's file</b><p>The scanned page opens in the file reader.</p><button class="btn" data-reader="${i.clipDate}" data-rdpage="${i.clipPg}">Open the page</button></div>`;
     return `<div class="mcard clipm"><button class="mclose" data-close aria-label="Close">${I('close', 18)}</button>
       <div class="cimgcol">${imgSide}</div>
-      <div class="cinfo"><div class="mhead">${badge(i.source)}<span>${U.esc(pname(i.source))} · page ${i.clipPg} · ${dlabel(i.clipDate)}</span>${C.stanceTag(i.stance)}</div>
+      <div class="cinfo"><div class="mhead">${badge(i.source)}<span>${U.esc(pname(i.source))} · page ${i.clipPg} · ${dlabel(i.clipDate)}</span>${C.stanceTag(U.gs(i))}</div>
         <h3>${U.esc(i.headline || ('Clipping from ' + pname(i.source)))}</h3>
         <div class="chips">${(i.people || []).map(e => `<button class="chip on" data-cf="person=${U.esc(e)}" data-go="wall">${U.esc(e)}</button>`).join('')}${i.entities.filter(e => (i.people || []).indexOf(e) < 0).map(e => `<span class="chip ghost">${U.esc(e)}</span>`).join('')}</div>
         <div class="kvgrid">${kv.map(x => `<div><span>${x[0]}</span><b>${U.esc(x[1])}</b></div>`).join('')}</div>

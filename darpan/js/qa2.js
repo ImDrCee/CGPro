@@ -15,15 +15,15 @@
 
   const has = (it, name) => (it.people || []).indexOf(name) >= 0 || it.entities.indexOf(name) >= 0;
   const forWho = (items, name) => items.filter(i => has(i, name));
-  const tone = items => { const n = items.length, sup = items.filter(i => i.stance > 0).length, crit = items.filter(i => i.stance < 0).length; return { n, sup, crit, net: n ? Math.round((100 * (sup - crit)) / n) : 0 }; };
+  const tone = items => { const n = items.length, sup = items.filter(i => U.gs(i) > 0).length, crit = items.filter(i => U.gs(i) < 0).length; return { n, sup, crit, net: n ? Math.round((100 * (sup - crit)) / n) : 0 }; };
   const specific = items => items.filter(i => i.issue && !i.generic && !i.broad);
   const issueTone = items => {
     const m = {};
-    specific(items).forEach(i => { const o = m[i.issue] || (m[i.issue] = { k: i.issue, n: 0, sup: 0, crit: 0, items: [] }); o.n++; o.items.push(i); if (i.stance > 0) o.sup++; else if (i.stance < 0) o.crit++; });
+    specific(items).forEach(i => { const o = m[i.issue] || (m[i.issue] = { k: i.issue, n: 0, sup: 0, crit: 0, items: [] }); o.n++; o.items.push(i); if (U.gs(i) > 0) o.sup++; else if (U.gs(i) < 0) o.crit++; });
     return Object.values(m);
   };
   const topIssues = (items, k) => issueTone(items).sort((a, b) => b.n - a.n).slice(0, k);
-  const outletTone = items => { const m = {}; items.forEach(i => { const o = m[i.source] || (m[i.source] = { k: i.source, n: 0, sup: 0, crit: 0 }); o.n++; if (i.stance > 0) o.sup++; else if (i.stance < 0) o.crit++; }); return Object.values(m).sort((a, b) => b.n - a.n); };
+  const outletTone = items => { const m = {}; items.forEach(i => { const o = m[i.source] || (m[i.source] = { k: i.source, n: 0, sup: 0, crit: 0 }); o.n++; if (U.gs(i) > 0) o.sup++; else if (U.gs(i) < 0) o.crit++; }); return Object.values(m).sort((a, b) => b.n - a.n); };
   const bar = (crit, sup, n) => `<div class="divbar"><i class="pos" style="width:${pct(sup, n)}%"></i><i class="neg" style="width:${pct(crit, n)}%"></i></div>`;
   const pillNet = v => `<span class="pill" style="--c:${v > 10 ? 'var(--pos)' : v < -10 ? 'var(--neg)' : 'var(--pri2)'}">${sgn(v)}</span>`;
   const thin = (p, who) => ({ html: `<p class="lead">There are too few items about <b>${esc(who)}</b> in ${p.label} to describe a trend (at least 5 are needed). Try a longer window, or add links in the Library.</p>` });
@@ -55,8 +55,8 @@
       ${note('Collection grew over time, so compare tone and the mix of issues rather than raw volumes. A week marked no data means nothing was collected for it, not that nothing was reported.')}
       ${archiveNote(p, w)}
       ${section('Week by week', `<table class="tbl"><thead><tr><th>Week of</th><th class="r">Items</th><th>Tone</th><th class="r">Net</th><th>Main issue</th></tr></thead><tbody>${weeks.map(x => `<tr><td>${D(x.a)}</td><td class="r">${x.t.n || '<span class="muted">no data</span>'}</td><td>${x.t.n ? bar(x.t.crit, x.t.sup, x.t.n) : ''}</td><td class="r">${x.t.n >= 3 ? pillNet(x.t.net) : '<span class="muted">—</span>'}</td><td class="muted">${x.iss ? esc(x.iss.k) : ''}</td></tr>`).join('')}</tbody></table>`)}
-      ${hi && lo && hi !== lo ? section('Turning points', `<div class="orow"><div><b>High point: week of ${D(hi.a)}</b><p>Net ${sgn(hi.t.net)} on ${hi.t.n} items${hi.iss ? ', mainly ' + esc(hi.iss.k) : ''}. ${(() => { const x = pick(hi.items, i => i.stance > 0); return x ? '“' + esc(x.headline) + '” (' + esc(x.source) + ')' : ''; })()}</p></div></div>
-        <div class="orow"><div><b>Low point: week of ${D(lo.a)}</b><p>Net ${sgn(lo.t.net)} on ${lo.t.n} items${lo.iss ? ', mainly ' + esc(lo.iss.k) : ''}. ${(() => { const x = pick(lo.items, i => i.stance < 0); return x ? '“' + esc(x.headline) + '” (' + esc(x.source) + ')' : ''; })()}</p></div></div>`) : ''}
+      ${hi && lo && hi !== lo ? section('Turning points', `<div class="orow"><div><b>High point: week of ${D(hi.a)}</b><p>Net ${sgn(hi.t.net)} on ${hi.t.n} items${hi.iss ? ', mainly ' + esc(hi.iss.k) : ''}. ${(() => { const x = pick(hi.items, i => U.gs(i) > 0); return x ? '“' + esc(x.headline) + '” (' + esc(x.source) + ')' : ''; })()}</p></div></div>
+        <div class="orow"><div><b>Low point: week of ${D(lo.a)}</b><p>Net ${sgn(lo.t.net)} on ${lo.t.n} items${lo.iss ? ', mainly ' + esc(lo.iss.k) : ''}. ${(() => { const x = pick(lo.items, i => U.gs(i) < 0); return x ? '“' + esc(x.headline) + '” (' + esc(x.source) + ')' : ''; })()}</p></div></div>`) : ''}
       ${section('Issues, period by period', `<div class="mgrid">${slices.map((s, k) => `<section><h5>${D(w.a + k * third)} to ${D(w.a + (k + 1) * third - 1)}</h5>${topIssues(s, 3).map(x => `<div class="orow"><div>${CGP.W.ilink(x.k)}<p>${x.n} items · ${x.crit} critical · ${x.sup} supportive</p></div></div>`).join('') || '<p class="muted">Not enough items.</p>'}</section>`).join('')}</div>`)}
       ${section('Strengths and vulnerabilities', `<div class="mgrid"><section><h5>Strengths</h5>${strengths.map(x => `<div class="orow"><div>${CGP.W.ilink(x.k)}<p>${x.sup} supportive vs ${x.crit} critical</p></div></div>`).join('') || '<p class="muted">No issue where supportive coverage leads.</p>'}</section><section><h5>Vulnerabilities</h5>${weak.map(x => `<div class="orow"><div>${CGP.W.ilink(x.k)}<p>${x.crit} critical vs ${x.sup} supportive</p></div></div>`).join('') || '<p class="muted">No issue where critical coverage leads.</p>'}</section></div>`)}
       ${section('How outlets reported', `<table class="tbl"><tbody>${outs.map(o => `<tr><td><b>${esc(o.k)}</b></td><td class="r">${o.n}</td><td>${bar(o.crit, o.sup, o.n)}</td></tr>`).join('')}</tbody></table>${note('Tone describes how each story was reported, not a judgement of the outlet. Small counts vary a lot.')}`)}`;

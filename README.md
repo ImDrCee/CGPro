@@ -32,6 +32,11 @@ Add any article, post or video link (one by one, pasted in bulk, or by importing
 
 Import format (array or `{"items":[…]}`): `url`, and optionally `title`, `text`, `date`, `channel`, `source`, `speakerType` (`media|opp|govt|bjp|citizen`), `topic`, `district`, `stance`, `likes`, `shares`, `comments`, `views`.
 
+## Net stance
+
+**Net stance** = (supportive − critical) ÷ all items × 100, using each item's stance *toward the government*. A plain crime, accident or disaster report is negative news but not criticism, so it counts as neutral for Net (it still shows in Key concerns and Alerts). A report that names the government, the opposition or a leader, or blames the police or administration, still counts as critical. The rule is `L.addGov` in `darpan/js/live.js`.
+
+**Weighted net** multiplies each item's direction by topic importance, urgency, spread, reach, source weight, recency and tagging confidence, scales it to −100..+100 and pulls it towards 0 for small samples (`E.netWeighted` in `darpan/js/engine.js`). Topic weights are `netWeights` in `darpan/js/data.js`, set by the team and applied the same way to every period; they are not adjusted to fit a result. Pulse shows both numbers and a "How it is calculated" panel.
 ## Updating the data
 
 One command refreshes everything and publishes it:

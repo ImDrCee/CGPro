@@ -50,7 +50,7 @@
 
     const kpis = `<div class="kpi-grid">
       ${card({ cls: 'kpi', body: `<span class="kl">Items tracked</span><div class="kv">${cu(x.st.n)}${dchip(x.st.n, x.pst.n, x.prevOk)}</div><div class="ks">${C.spark(all.totals, { h: 34, color: 'var(--pri)' })}</div>` })}
-      ${card({ cls: 'kpi', body: `<span class="kl">Net stance · all items</span><div class="kv"><b>${sgn(x.st.net)}</b></div>${C.gauge(x.st.net)}` })}
+      ${card({ cls: 'kpi', body: `<span class="kl">Net stance · all items</span><div class="kv"><b>${sgn(x.st.net)}</b></div>${C.gauge(x.st.net)}<p class="kp netw">Weighted <b>${sgn(CGP.E.netWeighted(x.items, x.range ? x.range[1] : Date.now()).value)}</b> <button class="link" data-netinfo>How it is calculated</button></p>` })}
       ${card({ cls: 'kpi', body: `<span class="kl">Engagement</span><div class="kv">${eng ? cu(U.fmt(eng)) : '<b>—</b>'}${dchip(eng, engP, x.prevOk)}</div><div class="ks">${C.spark(all.pos, { h: 34, color: 'var(--pos)' })}</div>` })}
       ${card({ cls: 'kpi ' + (alerts.length ? 'warn' : ''), body: `<span class="kl">Active alerts</span><div class="kv">${cu(alerts.length)}</div><p class="kp">${alerts.length ? U.esc(alerts[0].issue) : 'All quiet'}</p>` })}
     </div>`;
@@ -240,6 +240,24 @@
     return `<div class="bento"><div class="span12 leaders-grid">${cards}</div>${tbl}</div>`;
   };
 
+
+  // How Net stance is calculated
+  V.netInfo = S => {
+    const x = ctx(S), end = x.range ? x.range[1] : Date.now(), st = x.st, w = E.netWeighted(x.items, end), cm = x.items.filter(i => i.mentionsCM);
+    const cmS = E.stats(cm), cmW = E.netWeighted(cm, end), Wt = R.netWeights || {};
+    const rows = w.topics.slice(0, 8).map(t => `<tr><td>${U.esc(U.tname(t.topic))}</td><td class="r">${t.n}</td><td class="r">${(Wt[t.topic] != null ? Wt[t.topic] : 0.5).toFixed(1)}</td><td class="r">${t.share}%</td><td class="r">${sgn(t.net)}</td><td class="r"><span class="pill" style="--c:${t.push > 0 ? 'var(--pos)' : t.push < 0 ? 'var(--neg)' : 'var(--pri2)'}">${t.push > 0 ? '+' : ''}${t.push}</span></td></tr>`).join('');
+    return `<div class="mcard issuem"><button class="mclose" data-close aria-label="Close">${I('close', 18)}</button>
+      <h3>How Net stance is calculated</h3><p class="mtext">For ${x.label}, ${st.n} items.</p>
+      <div class="tiles"><div class="tile-s"><span>Net stance (count)</span><b>${sgn(st.net)}</b></div><div class="tile-s"><span>Weighted net</span><b>${sgn(w.value)}</b></div><div class="tile-s"><span>Chief Minister, count</span><b>${sgn(cmS.net)}</b></div><div class="tile-s"><span>Chief Minister, weighted</span><b>${sgn(cmW.value)}</b></div></div>
+      <div class="mgrid"><section><h5>Net stance (count)</h5><p class="mtext"><b>(supportive items − critical items) ÷ all items × 100.</b> It runs from −100 to +100. Neutral items count in the total only.</p>
+        <p class="mtext">Each item's stance is its stance <b>toward the government</b>. A plain crime, accident or disaster report is negative news but not criticism, so it counts as neutral (${st.events} such reports in this selection). A report that names the government, the opposition or a leader, or that blames the police or administration, still counts as critical. Those reports still appear in Key concerns and Alerts.</p></section>
+        <section><h5>Weighted net</h5><p class="mtext"><b>Σ(direction × weight) ÷ Σ(weight) × 100</b>, pulled towards 0 when there are few items (× n ÷ (n + 20)).</p>
+        <p class="mtext">Direction is the stance toward the government, a little stronger when the wording is strong. An item's weight is the product of: <b>topic importance</b>, <b>urgency</b> (a recent spike), <b>spread</b> (outlets carrying it), <b>reach</b> (views), <b>source weight</b>, <b>recency</b> (halves every 3 days) and the <b>tagging confidence</b>. No item can count for more than three times a typical one. Official portal pages are left out.</p></section></div>
+      <h5>What moved the weighted net</h5>
+      <table class="tbl"><thead><tr><th>Topic</th><th class="r">Items</th><th class="r">Topic weight</th><th class="r">Share of weight</th><th class="r">Net of the topic</th><th class="r">Points added to the total</th></tr></thead><tbody>${rows}</tbody></table>
+      <p class="muted sm">Topic weights are set by the team in the reference data and applied the same way to every period, so a worse week lowers the score. They are not changed to fit a result. They measure how stories were reported, not public opinion.</p></div>`;
+  };
+
   // MLA profile modal
   V.mla = seat => {
     const m = CGP.mlas[seat]; if (!m) return '';
@@ -331,7 +349,7 @@
       ['Speaker type', R.speakers[it.speakerType] ? R.speakers[it.speakerType].label : it.speakerType], ['Entities', it.entities.join(', ') || '—'], ['Mentions CM', it.mentionsCM ? 'Yes' : 'No'],
       ['District', it.district ? U.dname(it.district) : (it.place || '—')], ['Constituency', it.constituency || '—'],
       ['Topic', U.tname(it.topic)], ['Scheme', it.scheme || '—'], ['Issue / concern', it.issue], ['Narrative', it.narrative], ['Hashtags', it.hashtags.join(' ') || '—'],
-      ['Stance', it.stance > 0 ? 'Supportive' : it.stance < 0 ? 'Critical' : 'Neutral'], ['Sentiment', it.sentiment], ['Emotion', it.emotion], ['Intent', it.intent], ['Tag confidence', it.curated ? 'curated' : Math.round((it.conf || 0) * 100) + '%'],
+      ['Stance toward government', U.gs(it) > 0 ? 'Supportive' : U.gs(it) < 0 ? 'Critical' : (it.event ? 'Neutral (incident report)' : 'Neutral')], ['News tone', it.stance > 0 ? 'Positive' : it.stance < 0 ? 'Negative' : 'Neutral'], ['Sentiment', it.sentiment], ['Emotion', it.emotion], ['Intent', it.intent], ['Tag confidence', it.curated ? 'curated' : Math.round((it.conf || 0) * 100) + '%'],
       ['Likes', U.fmt(it.likes)], ['Shares', U.fmt(it.shares)], ['Comments', U.fmt(it.comments)], ['Views', U.fmt(it.views)], ['Traction', it.traction + '/100'],
       ['Misinformation risk', Math.round(it.misinfo * 100) + '%'], ['Urgency', it.urgency + '/100']
     ];

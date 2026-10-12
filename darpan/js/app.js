@@ -159,7 +159,7 @@
   }
 
   // ───── events ─────
-  const SEL = '[data-view],[data-nav],[data-tab],[data-mode],[data-ask],[data-item],[data-followclips],[data-mla],[data-account],[data-district],[data-district-open],[data-metric],[data-days],[data-close],[data-toggle-theme],[data-copy-brief],[data-form],[data-open-issue],[data-verdict-id],[data-rb-issue],[data-del],[data-export],[data-cmp],[data-track],[data-copy],[data-rv-save],[data-clear-all],.modal';
+  const SEL = '[data-view],[data-nav],[data-tab],[data-mode],[data-ask],[data-item],[data-netinfo],[data-followclips],[data-mla],[data-account],[data-district],[data-district-open],[data-metric],[data-days],[data-close],[data-toggle-theme],[data-copy-brief],[data-form],[data-open-issue],[data-verdict-id],[data-rb-issue],[data-del],[data-export],[data-cmp],[data-track],[data-copy],[data-rv-save],[data-clear-all],.modal';
   function reopen() { if (modal().classList.contains('open') && modal().querySelector('.issuem')) { const h = modal().querySelector('.issuem h3'); if (h) openIssue(h.textContent); } }
   document.addEventListener('click', e => {
     const t = e.target.closest(SEL); if (!t) return;
@@ -171,6 +171,7 @@
     if (d.mode) { e.preventDefault(); CGP.setMode(d.mode); return render({ keepScroll: true, noFocus: true }); }
     if (d.ask !== undefined) { closeModal(); return ask(d.ask); }
     if (t.hasAttribute('data-followclips')) { const n = CGP.followClipSources(); toast(n ? 'Following ' + n + ' accounts' : 'Already following all'); return render({ keepScroll: true, noFocus: true }); }
+    if (t.hasAttribute('data-netinfo')) { e.stopPropagation(); return openModal(V.netInfo(S)); }
     if (d.mla) return openModal(V.mla(d.mla));
     if (d.account) return openModal(V.account(d.account));
     if (d.item) return openItem(d.item);
