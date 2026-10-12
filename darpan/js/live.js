@@ -37,6 +37,13 @@
   L.tok = t => String(t || '').toLowerCase().replace(/\s+[-–|]\s+[^-–|]{2,40}$/, '').replace(/[^\p{L}\p{N}\s]/gu, ' ').split(/\s+/).filter(w => w.length > 2);
   L.jac = (a, b) => { if (!a.length || !b.length) return 0; const A = new Set(a); let i = 0; const B = new Set(b); B.forEach(x => { if (A.has(x)) i++; }); return i / (A.size + B.size - i); };
 
+  // Tag corrections: national politics is not a law-and-order story, sport is not welfare or farming, and foreign news is not about the state.
+  const POLITICS = rxi('राहुल गांधी|प्रियंका गांधी|वोट चोरी|उपचुनाव|bypoll|इंडिया गठबंधन|\\bINDIA ब्लॉक|चुनाव आयोग|एसआईआर|मतदाता सूची|सुप्रीम कोर्ट|rahul gandhi|vote chori|election commission');
+  const CRIMEW = rxi('हत्या|चोरी|गिरफ्तार|दुष्कर्म|ठगी|लूट|ब्लैकमेल|मारपीट|murder|theft|arrest|rape|robbery|blackmail');
+  const SPORT = rxi('t20|क्रिकेट|cricket|\\bipl\\b|\\bwpl\\b|हॉकी|hockey|फुटबॉल|football|टूर्नामेंट|tournament|world cup|वर्ल्ड कप|olympic|ओलंपिक|एशिया कप');
+  const FOREIGN = rxi('सूडान|यूक्रेन|रूस|गाजा|इजरायल|इज़राइल|अमेरिका|पाकिस्तान|ट्रंप|ईरान(?!ी)|चीन|sudan|ukraine|russia|gaza|israel|trump|iran|pakistan|china|nepal|bangladesh');
+  const CGHARD = rxi('छत्तीसगढ़|छत्तीसगढ|chhattisgarh|रायपुर|raipur|बिलासपुर|bilaspur|दुर्ग|भिलाई|बस्तर|bastar|कोरबा|रायगढ़|सरगुजा|साय|\\bcg\\b');
+
   // Raw {id, ts, t, text, u, s, c, l, v, k, ...} -> full item
   L.tag = function (raw) {
     const text = (raw.t || '') + ' ' + (raw.text || '');
@@ -48,6 +55,9 @@
     if (!issue) for (const i of ISS) { if (i.rx.test(text)) { issue = i; break; } }
     let topic = issue ? issue.topic : best || 'governance';
     specific = !!issue;
+    const sport = SPORT.test(text), politics = POLITICS.test(text) && !CRIMEW.test(text);
+    if (sport) { topic = 'culture'; issue = null; specific = false; }
+    else if (politics && (topic === 'law' || topic === 'corruption')) { topic = 'governance'; issue = null; specific = false; }
     const issueName = issue ? issue.name : U.tshort(topic) + ' coverage';
 
     // district: earliest match among tracked districts
@@ -70,6 +80,7 @@
     LEAD.forEach(l => { if (l.rx.test(text)) { entities.push(l.name); if (!lead && ((speakerType === 'opp' && l.group === 'opp') || (speakerType === 'govt' && l.group === 'govt'))) lead = l.name; } });
     ENT.forEach(e => { if (e.rx.test(text)) entities.push(e.name); });
     const mentionsCM = entities.indexOf(R.cm) >= 0;
+    if (sport && speakerType === 'media' && !mentionsCM) stance = 0;
     const people = [];
     (R.people || []).forEach(p => { if (p.rx.test(text) || p.en.test(text)) people.push(p.name); });
     const speaker = speakerType === 'media' ? (raw.s || 'Unknown') : lead || (speakerType === 'opp' ? 'Opposition (from headline)' : speakerType === 'govt' ? 'Government (from headline)' : 'BJP (from headline)');
@@ -85,7 +96,7 @@
       hashtags: (text.match(/#[\w\u0900-\u097F]+/g) || []).slice(0, 4),
       likes: raw.k || 0, shares: raw.shares || 0, comments: raw.comments || 0, views: raw.v || 0, raw: 0, misinfo, headline: raw.t || '', text: raw.text || '',
       link: raw.u || '', origin: raw.origin || 'live', auto: true, conf, pickup: 1, story: raw.id,
-      broad: !!(issue && issue.broad) || !issue, generic: !issue, offState: !(CGSIG.test(text) || CGSRC.test(raw.s || ''))
+      broad: !!(issue && issue.broad) || !issue, generic: !issue, offState: !(CGSIG.test(text) || CGSRC.test(raw.s || '')) || (FOREIGN.test(text) && !CGHARD.test(text))
     };
   };
 
