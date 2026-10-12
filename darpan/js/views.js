@@ -28,6 +28,7 @@
   V.pulse = S => {
     const x = ctx(S);
     const cm = x.items.filter(i => i.mentionsCM), cmS = E.stats(cm);
+    const pulseEnd = x.range ? x.range[1] : Date.now(), cmW = E.netWeighted(cm, pulseEnd), allW = E.netWeighted(x.items, pulseEnd);
     const cmPrev = x.prev.filter(i => i.mentionsCM), cmP = E.stats(cmPrev);
     const ser = E.series(cm, S.days), all = E.series(x.items, S.days);
     const alerts = E.alerts(CGP.items, S);
@@ -45,12 +46,12 @@
           <div><span>Supportive</span><b>${U.pct(cmS.support, cmS.n)}%</b></div>
           <div><span>Critical</span><b>${U.pct(cmS.critical, cmS.n)}%</b></div>
           <div><span>Est. reach</span><b>${cmS.reach ? U.fmt(cmS.reach) : '—'}</b></div>
-          <div><span>Net stance</span><b>${sgn(cmS.net)}</b></div>
+          <div><span>Janta Pulse</span><b>${sgn(cmW.value)}</b></div>
         </div></section>`;
 
     const kpis = `<div class="kpi-grid">
       ${card({ cls: 'kpi', body: `<span class="kl">Items tracked</span><div class="kv">${cu(x.st.n)}${dchip(x.st.n, x.pst.n, x.prevOk)}</div><div class="ks">${C.spark(all.totals, { h: 34, color: 'var(--pri)' })}</div>` })}
-      ${card({ cls: 'kpi', body: `<span class="kl">Net stance · all items</span><div class="kv"><b>${sgn(x.st.net)}</b></div>${C.gauge(x.st.net)}<p class="kp netw">Weighted <b>${sgn(CGP.E.netWeighted(x.items, x.range ? x.range[1] : Date.now()).value)}</b> <button class="link" data-netinfo>How it is calculated</button></p>` })}
+      ${card({ cls: 'kpi', body: `<span class="kl">Janta Pulse · all items</span><div class="kv"><b>${sgn(allW.value)}</b></div>${C.gauge(allW.value)}<p class="kp netw"><button class="link" data-netinfo>How it is calculated</button></p>` })}
       ${card({ cls: 'kpi', body: `<span class="kl">Engagement</span><div class="kv">${eng ? cu(U.fmt(eng)) : '<b>—</b>'}${dchip(eng, engP, x.prevOk)}</div><div class="ks">${C.spark(all.pos, { h: 34, color: 'var(--pos)' })}</div>` })}
       ${card({ cls: 'kpi ' + (alerts.length ? 'warn' : ''), body: `<span class="kl">Active alerts</span><div class="kv">${cu(alerts.length)}</div><p class="kp">${alerts.length ? U.esc(alerts[0].issue) : 'All quiet'}</p>` })}
     </div>`;
@@ -137,7 +138,7 @@
     const mval = r => (S.metric === 'volume' ? r.st.n : S.metric === 'net' ? Math.abs(r.st.net) + 4 : r.concernScore);
     const mlabel = r => (S.metric === 'net' ? sgn(r.st.net) : S.metric === 'volume' ? r.st.n : r.concernScore);
     const map = card({ cls: 'span7', title: 'Chhattisgarh · 10 districts', sub: 'Stylised tile map. Darker means higher.',
-      right: `<div class="seg">${[['concern', 'Concern'], ['volume', 'Volume'], ['net', 'Net stance']].map(m => `<button class="${S.metric === m[0] ? 'on' : ''}" data-metric="${m[0]}">${m[1]}</button>`).join('')}</div>`,
+      right: `<div class="seg">${[['concern', 'Concern'], ['volume', 'Volume'], ['net', 'Net']].map(m => `<button class="${S.metric === m[0] ? 'on' : ''}" data-metric="${m[0]}">${m[1]}</button>`).join('')}</div>`,
       body: C.tileMap(rows.map(r => ({ d: r.d, value: mval(r), label: mlabel(r), tone: S.metric === 'net' ? (r.st.net >= 0 ? 'var(--pos)' : 'var(--neg)') : S.metric === 'volume' ? 'var(--pri)' : 'var(--neg)', tip: `<b>${r.d.name}</b><br>${r.st.n} items · net ${sgn(r.st.net)}<br>Concern ${r.concernScore}` })), { sel: sel.d.id }) });
     const s = sel.st, topics = E.countBy(sel.items, 'topic').slice(0, 5);
     const detail = card({ cls: 'span5 detail', title: sel.d.name + ' <small>' + sel.d.hi + '</small>', sub: sel.d.note,
@@ -241,7 +242,7 @@
   };
 
 
-  // How Net stance is calculated
+  // How Janta Pulse is calculated
   V.netInfo = S => {
     const x = ctx(S), end = x.range ? x.range[1] : Date.now(), st = x.st, w = E.netWeighted(x.items, end), cm = x.items.filter(i => i.mentionsCM);
     const cmS = E.stats(cm), cmW = E.netWeighted(cm, end), Wt = R.netWeights || {};
@@ -249,15 +250,15 @@
     const urgent = al.map(a => ({ a, imp: Wt[issTopic[a.issue]] != null ? Wt[issTopic[a.issue]] : 0.5 })).sort((p, q) => q.a.ratio * q.imp - p.a.ratio * p.imp).slice(0, 5);
     const rows = w.topics.slice(0, 8).map(t => `<tr><td>${U.esc(U.tname(t.topic))}</td><td class="r">${t.n}</td><td class="r">${(Wt[t.topic] != null ? Wt[t.topic] : 0.5).toFixed(1)}</td><td class="r">${t.share}%</td><td class="r">${sgn(t.net)}</td><td class="r"><span class="pill" style="--c:${t.push > 0 ? 'var(--pos)' : t.push < 0 ? 'var(--neg)' : 'var(--pri2)'}">${t.push > 0 ? '+' : ''}${t.push}</span></td></tr>`).join('');
     return `<div class="mcard issuem"><button class="mclose" data-close aria-label="Close">${I('close', 18)}</button>
-      <h3>How Net stance is calculated</h3><p class="mtext">For ${x.label}, ${st.n} items.</p>
-      <div class="tiles"><div class="tile-s"><span>Net stance (count)</span><b>${sgn(st.net)}</b></div><div class="tile-s"><span>Weighted net</span><b>${sgn(w.value)}</b></div><div class="tile-s"><span>Chief Minister, count</span><b>${sgn(cmS.net)}</b></div><div class="tile-s"><span>Chief Minister, weighted</span><b>${sgn(cmW.value)}</b></div></div>
-      <div class="mgrid"><section><h5>Net stance (count)</h5><p class="mtext"><b>(supportive items − critical items) ÷ all items × 100.</b> It runs from −100 to +100. Neutral items count in the total only.</p>
-        <p class="mtext">Each item's stance is its stance <b>toward the government</b>. A plain crime, accident or disaster report is negative news but not criticism, so it counts as neutral (${st.events} such reports in this selection). A report that names the government, the opposition or a leader, or that blames the police or administration, still counts as critical. Those reports still appear in Key concerns and Alerts.</p></section>
-        <section><h5>Weighted net</h5><p class="mtext"><b>Σ(direction × weight) ÷ Σ(weight) × 100</b>, pulled towards 0 when there are few items (× n ÷ (n + 20)).</p>
-        <p class="mtext">Direction is the stance toward the government, a little stronger when the wording is strong. An item's weight is the product of: <b>topic importance</b>, <b>urgency</b> (a recent spike), <b>spread</b> (outlets carrying it), <b>reach</b> (views), <b>source weight</b>, <b>recency</b> (halves every 3 days) and the <b>tagging confidence</b>. No item can count for more than three times a typical one. Official portal pages are left out.</p></section></div>
+      <h3>How Janta Pulse is calculated</h3><p class="mtext">For ${x.label}, ${st.n} items.</p>
+      <div class="tiles"><div class="tile-s"><span>Janta Pulse</span><b>${sgn(w.value)}</b></div><div class="tile-s"><span>Chief Minister items only</span><b>${sgn(cmW.value)}</b></div></div>
+      <div class="mgrid"><section><h5>Janta Pulse</h5><p class="mtext"><b>Σ(direction × weight) ÷ Σ(weight) × 100</b>. It runs from −100 to +100.</p>
+        <p class="mtext">Each item's direction is its stance <b>toward the government</b>. A plain crime, accident or disaster report is negative news but not criticism, so it counts as neutral (${st.events} such reports in this selection). A report that names the government, the opposition or a leader, or that blames the police or administration, still counts as critical. Those reports still appear in Key concerns and Alerts.</p></section>
+        <section><h5>What gives an item more weight</h5>
+        <p class="mtext">Direction is a little stronger when the wording is strong. An item's weight is the product of: <b>topic importance</b>, <b>urgency</b> (a recent spike), <b>spread</b> (outlets carrying it), <b>reach</b> (views), <b>source weight</b>, <b>recency</b> (halves every 3 days) and the <b>tagging confidence</b>. No item can count for more than three times a typical one. Official portal pages are left out.</p></section></div>
       <h5>Urgent and important right now</h5>
       ${urgent.length ? `<table class="tbl"><thead><tr><th>Concern</th><th>Where</th><th class="r">Last 24h</th><th class="r">Vs usual</th><th class="r">Topic weight</th></tr></thead><tbody>${urgent.map(u => `<tr><td>${CGP.W.ilink(u.a.issue)}</td><td class="muted">${u.a.topDist.map(U.dname).join(', ')}</td><td class="r">${u.a.last24}</td><td class="r">${u.a.ratio >= 10 ? '10x+' : u.a.ratio.toFixed(1) + 'x'}</td><td class="r">${u.imp.toFixed(1)}</td></tr>`).join('')}</tbody></table><p class="muted sm">Concerns that are spiking against their usual level, ordered by how much the topic matters. This is shown separately so a spike in a heavy topic is never hidden inside one number.</p>` : '<p class="muted">No spike against the usual level in the last 24 hours.</p>'}
-      <h5>What moved the weighted net</h5>
+      <h5>What moved Janta Pulse</h5>
       <table class="tbl"><thead><tr><th>Topic</th><th class="r">Items</th><th class="r">Topic weight</th><th class="r">Share of weight</th><th class="r">Net of the topic</th><th class="r">Points added to the total</th></tr></thead><tbody>${rows}</tbody></table>
       <p class="muted sm">Topic weights are set by the team in the reference data and applied the same way to every period, so a worse week lowers the score. They are not changed to fit a result. They measure how stories were reported, not public opinion.</p></div>`;
   };
@@ -313,7 +314,7 @@
     const { x, b, acts } = V.briefData(S);
     const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
     return `<div class="briefwrap"><article class="card brief">
-      <div class="brief-h"><div><span class="eyebrow">Daily brief · Chhattisgarh</span><h2>${today}</h2><p>${x.label} · ${b.st.n} items · CM mentioned in ${b.cm.n} · net stance ${sgn(b.st.net)}</p></div>
+      <div class="brief-h"><div><span class="eyebrow">Daily brief · Chhattisgarh</span><h2>${today}</h2><p>${x.label} · ${b.st.n} items · CM mentioned in ${b.cm.n} · Janta Pulse ${sgn(E.netWeighted(x.items, x.range ? x.range[1] : Date.now()).value)}</p></div>
         <div class="brief-act"><button class="btn ghost" data-copy-brief>${I('copy', 16)} Copy</button><button class="btn" onclick="window.print()">${I('print', 16)} Print / PDF</button></div></div>
       <div class="bgrid">
         <section><h5>Key concerns</h5>${C.hbars(b.con.map(c => ({ label: `<button class="ilink" data-open-issue="${U.esc(c.issue)}">${U.esc(c.issue)}</button>`, value: c.score, right: c.n + ' items', color: 'var(--neg)', sub: c.topDist.slice(0, 3).map(U.dname).join(' · ') })))}<h5>History</h5>${b.con.slice(0, 4).map(c => CGP.W.hist(c.issue, c.topDist[0])).join('')}</section>

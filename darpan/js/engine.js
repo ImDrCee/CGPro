@@ -75,7 +75,7 @@
   };
 
 
-  // ───── Weighted Net stance ─────
+  // ───── Janta Pulse (weighted net) ─────
   // Direction of each item (stance toward the government, a little stronger when the wording is strong) multiplied by how much the
   // item matters: topic importance, urgency, spread across outlets, reach, source weight, recency and tagging confidence.
   // Result is scaled to -100..+100 and pulled toward 0 when there are few items.

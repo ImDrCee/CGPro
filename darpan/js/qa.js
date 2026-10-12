@@ -257,7 +257,7 @@
           <tr><td>Est. reach</td>${cols.map(c => `<td class="r">${U.fmt(c.s.reach)}</td>`).join('')}</tr>
           <tr><td>Supportive</td>${cols.map(c => `<td class="r">${U.pct(c.s.support, c.s.n)}%</td>`).join('')}</tr>
           <tr><td>Critical</td>${cols.map(c => `<td class="r">${U.pct(c.s.critical, c.s.n)}%</td>`).join('')}</tr>
-          <tr><td>Net stance</td>${cols.map(c => `<td class="r"><span class="pill" style="--c:${netColor(c.s.net)}">${sgn(c.s.net)}</span></td>`).join('')}</tr>
+          <tr><td>Net (supportive − critical)</td>${cols.map(c => `<td class="r"><span class="pill" style="--c:${netColor(c.s.net)}">${sgn(c.s.net)}</span></td>`).join('')}</tr>
           <tr><td>Top concern</td>${cols.map(c => `<td class="r">${c.c ? U.esc(c.c.issue) : '—'}</td>`).join('')}</tr></tbody></table>`)}`;
       return { html, ev: E.top(cols.reduce((a, c) => a.concat(c.its), []), 4) };
     },

@@ -5,7 +5,7 @@
   const D = (id, name, hi, tile, weight, note, kw, seats) => ({ id, name, hi, tile, weight, note, kw, seats });
   CGP.ref = {
     state: 'Chhattisgarh', cm: 'Vishnu Deo Sai',
-    // Weighted Net stance: how much each topic counts (0.2 to 1). Set by the team; change here. Applied the same way to every period.
+    // Janta Pulse: how much each topic counts (0.2 to 1). Set by the team; change here. Applied the same way to every period.
     netWeights: { bastar: 1.0, law: 0.9, corruption: 0.9, health: 0.8, farmers: 0.8, women: 0.8, jobs: 0.7, education: 0.7, power: 0.7, water: 0.7, tribal: 0.7, drugs: 0.7, housing: 0.6, infra: 0.6, governance: 0.5, culture: 0.3 },
     // How far back the analysis reaches. Raise this (for example to 12) when a longer archive is wanted.
     archiveMonths: 3,
