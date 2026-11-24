@@ -205,6 +205,12 @@
       { platform: 'Facebook', handle: 'ChhattisgarhCMO', owner: 'CM Office', status: 'verified' },
       { platform: 'X', handle: '@DPRChhattisgarh', owner: 'Directorate of Public Relations', status: 'verified' },
       { platform: 'Facebook', handle: 'DPRChhattisgarh', owner: 'Directorate of Public Relations', status: 'verified' },
+      { platform: 'X', handle: '@narendramodi', owner: 'Prime Minister Narendra Modi', status: 'verified' },
+      { platform: 'Facebook', handle: 'narendramodi', owner: 'Prime Minister Narendra Modi', status: 'verified' },
+      { platform: 'Instagram', handle: '@narendramodi', owner: 'Prime Minister Narendra Modi', status: 'verified' },
+      { platform: 'X', handle: '@NitinNabin', owner: 'BJP National President Nitin Nabin', status: 'verified' },
+      { platform: 'Facebook', handle: 'NitinNabinBJP', owner: 'BJP National President Nitin Nabin', status: 'verified' },
+      { platform: 'Instagram', handle: '@nitinnabinbjp', owner: 'BJP National President Nitin Nabin', status: 'verified' },
       { platform: 'X / Facebook / Instagram', handle: 'BJP Chhattisgarh state unit', owner: 'Party', status: 'todo' },
       { platform: 'X / Facebook / Instagram', handle: 'Congress Chhattisgarh state unit', owner: 'Opposition', status: 'todo' },
       { platform: 'X / Facebook / Instagram', handle: 'Mahant, Baghel, Baij, Singh Deo', owner: 'Opposition leaders', status: 'todo' }
