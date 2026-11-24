@@ -11,3 +11,5 @@ __pycache__/
 pulse_data/
 
 .env
+
+JantaPulseAhentHandoff.md

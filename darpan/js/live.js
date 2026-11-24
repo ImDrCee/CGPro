@@ -167,7 +167,9 @@
     const extra = [];
     ((g.CGP_ACCOUNTS && g.CGP_ACCOUNTS.accounts) || []).forEach(a => a.items.forEach(r => { if (!have[r.id]) { have[r.id] = 1; extra.push(r); } }));
     ((g.CGP_SOCIAL && g.CGP_SOCIAL.items) || []).forEach(r => { if (!have[r.id]) { have[r.id] = 1; extra.push(r); } });
-    const src = base.concat(extra);
+    // Posts by national leaders are shown on their own card and kept out of the Chhattisgarh scores.
+    CGP.national = extra.filter(r => r.nat).map(r => ({ id: r.id, ts: r.ts, source: r.s, headline: r.t, link: r.u, likes: r.k || 0, shares: r.shares || 0, comments: r.comments || 0, views: r.v || 0, lang: r.l })).sort((a, b) => b.ts - a.ts);
+    const src = base.concat(extra.filter(r => !r.nat));
     const clipItems = ((g.CGP_CLIPS && g.CGP_CLIPS.items) || []).map(c => Object.assign({}, c, { offState: false }));
     const all = src.map(r => L.tag(r)).concat(clipItems);
     const cut = L.cutoff();
